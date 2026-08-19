@@ -79,7 +79,15 @@
   if (datosString) {
     const datos = JSON.parse(datosString);
 
-    document.getElementById("numeroFactura").innerText = "Factura: " + (datos.numeroFactura || "");
+    const numFactura = datos.numeroFactura || "";
+    document.getElementById("numeroFactura").innerText = "Factura: " + numFactura;
+
+    // Cambiar el título del documento para que el PDF se descargue con el número de factura
+    if (numFactura) {
+      document.title = `Factura_${numFactura}`;
+    } else {
+      document.title = "Factura";
+    }
 
     if (datos.fecha) {
       const partesFecha = datos.fecha.split("-");
