@@ -1,0 +1,186 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f3f3f3;
+  margin: 0;
+  padding: 5px;
+  font-size: 14px;
+}
+
+.container {
+  max-width: 650px;
+  margin: auto;
+  background: white;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+h1 {
+  text-align: center;
+  margin: 4px 0 10px 0;
+  font-size: 22px;
+}
+
+h2 {
+  text-align: center;
+  margin: 4px 0;
+  font-size: 18px;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+input,
+select {
+  padding: 7px;
+  font-size: 14px;
+}
+
+.concepto {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+button {
+  padding: 8px;
+  cursor: pointer;
+  border: none;
+  background: black;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.btnPrincipal {
+  margin-top: 8px;
+  position: sticky;
+  bottom: 10px;
+}
+
+/* FACTURA */
+
+.ticketBody {
+  background: white;
+}
+
+.ticket {
+  width: 360px;
+  margin: auto;
+  padding: 10px;
+  color: black;
+  box-sizing: border-box;
+}
+
+.ticket h1,
+.ticket h2 {
+  text-align: center;
+  margin: 5px 0;
+}
+
+.bloque {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.bloque p {
+  margin: 3px 0;
+}
+
+.tituloBloque {
+  background: #efefef;
+  display: inline-block;
+  padding: 5px 10px;
+  margin-bottom: 10px;
+}
+
+.datosFactura {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 30px 0;
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  table-layout: fixed;
+}
+
+th {
+  border-bottom: 1px solid black;
+  padding-bottom: 5px;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+td {
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+.total {
+  margin-top: 25px;
+  font-size: 18px;
+}
+
+.totalLinea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.totalLinea h2 {
+  margin: 0;
+}
+
+.acciones {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.otroConcepto {
+  margin-top: 10px;
+}
+
+hr {
+  margin: 8px 0;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+@page {
+  size: auto;
+  margin: 8mm;
+}
+
+@media print {
+  .acciones {
+    display: none;
+  }
+
+  body {
+    background: white;
+  }
+
+  .ticket {
+    width: 100%;
+  }
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="ticketBody">
+
+  <div class="ticket" id="ticket">
+
+    <h1>Factura simplificada</h1>
+    <h2 id="emisorNegocio"></h2>
+
+    <div class="bloque">
+      <div class="tituloBloque">Datos del emisor</div>
+
+      <p><strong id="emisorNombre"></strong></p>
+      <p id="emisorDni"></p>
+      <p id="emisorDir"></p>
+      <p id="emisorPoblacion"></p>
+      <p id="emisorTel"></p>
+      <p id="emisorEmail"></p>
+    </div>
+
+    <div class="datosFactura">
+      <span id="numeroFactura"></span>
+      <span id="fechaFactura"></span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Cantidad</th>
+          <th>Precio</th>
+          <th>Importe</th>
+        </tr>
+      </thead>
+
+      <tbody id="tablaConceptos">
+      </tbody>
+    </table>
+
+    <div class="total">
+
+      <div class="totalLinea">
+        <strong>Total factura:</strong>
+        <h2 id="totalFactura">0€</h2>
+      </div>
+
+      <p>IVA incluido</p>
+
+    </div>
+
+  </div>
+
+  <div class="acciones">
+    <button onclick="window.print()">
+      Imprimir / Guardar PDF
+    </button>
+  </div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+
+  // Cargar datos del emisor desde los parámetros URL
+  document.getElementById("emisorNegocio").innerText = params.get("emisorNegocio") || "";
+  document.getElementById("emisorNombre").innerText = params.get("emisorNombre") || "";
+  document.getElementById("emisorDni").innerText = params.get("emisorDni") || "";
+  document.getElementById("emisorDir").innerText = params.get("emisorDir") || "";
+  document.getElementById("emisorPoblacion").innerText = params.get("emisorPoblacion") || "";
+  document.getElementById("emisorTel").innerText = params.get("emisorTel") || "";
+  document.getElementById("emisorEmail").innerText = params.get("emisorEmail") || "";
+
+  // Cargar datos de la factura
+  const datosString = params.get("datos");
+
+  if (datosString) {
+    const datos = JSON.parse(datosString);
+
+    document.getElementById("numeroFactura").innerText = "Factura: " + (datos.numeroFactura || "");
+
+    if (datos.fecha) {
+      const partesFecha = datos.fecha.split("-");
+      const fechaFormateada = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
+      document.getElementById("fechaFactura").innerText = "Fecha: " + fechaFormateada;
+    }
+
+    const tabla = document.getElementById("tablaConceptos");
+    let total = 0;
+
+    datos.conceptos.forEach(c => {
+      const importe = c.cantidad * c.precio;
+      total += importe;
+
+      tabla.innerHTML += `
+        <tr>
+          <td>${c.descripcion}</td>
+          <td>${c.cantidad}</td>
+          <td>${c.precio.toFixed(2)}€</td>
+          <td>${importe.toFixed(2)}€</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById("totalFactura").innerText = total.toFixed(2) + "€";
+  }
+</script>
+
+</body>
+</html>

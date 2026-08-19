@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generador de Facturas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1 id="tituloNegocio">Nueva factura</h1>
+
+    <div class="formulario">
+
+      <label for="numeroFactura">Número factura</label> 
+      <input type="text" id="numeroFactura" placeholder="Ej: 125">
+
+      <label for="fecha">Fecha</label>
+      <input type="date" id="fecha">
+      <button type="button" id="fechaHoy">
+        Usar fecha actual
+      </button>
+
+      <hr>
+
+      <h2>Conceptos</h2>
+
+      <div id="conceptosContainer"></div>
+
+      <button type="button" id="agregarConcepto">
+        + Añadir concepto
+      </button>
+
+      <hr>
+
+      <button type="button" id="generarFactura" class="btnPrincipal">
+        Generar factura
+      </button>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
