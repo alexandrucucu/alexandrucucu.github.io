@@ -38,11 +38,31 @@ select {
   font-size: 14px;
 }
 
+/* Ajuste del grid para incluir el botón de eliminar */
 .concepto {
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 38px;
   gap: 6px;
   margin-bottom: 6px;
+  align-items: center;
+}
+
+/* Botón 'X' para borrar concepto */
+.btnEliminar {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: center;
+  line-height: 1;
+}
+
+.btnEliminar:hover {
+  background: #c0392b;
 }
 
 button {
@@ -148,6 +168,7 @@ td {
 
 .otroConcepto {
   margin-top: 10px;
+  grid-column: 1 / -1;
 }
 
 hr {
