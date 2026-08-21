@@ -34,7 +34,7 @@ function crearConcepto(datos = null) {
       placeholder="Precio"
       min="0"
       step="0.01"
-      value="${datos ? datos.precio : ''}"
+      value="${datos && datos.precio !== undefined ? datos.precio : ''}"
     >
 
     <button type="button" class="btnEliminar" title="Eliminar concepto">&times;</button>
@@ -68,41 +68,6 @@ function crearConcepto(datos = null) {
   return div;
 }
 
-// Cargar datos en el formulario si existen en la URL (al pulsar "Volver y editar")
-const urlParams = new URLSearchParams(window.location.search);
-const negocio = urlParams.get("emisorNegocio");
-if (negocio) {
-  document.getElementById("tituloNegocio").innerText = `${negocio} - Nueva factura`;
-}
-
-const datosGuardados = urlParams.get("datos");
-const contenedorConceptos = document.getElementById("conceptosContainer");
-
-if (datosGuardados) {
-  try {
-    const factura = JSON.parse(datosGuardados);
-    document.getElementById("numeroFactura").value = factura.numeroFactura || "";
-    document.getElementById("fecha").value = factura.fecha || "";
-
-    if (factura.conceptos && factura.conceptos.length > 0) {
-      factura.conceptos.forEach(conceptoData => {
-        contenedorConceptos.appendChild(crearConcepto(conceptoData));
-      });
-    } else {
-      contenedorConceptos.appendChild(crearConcepto());
-    }
-  } catch (e) {
-    contenedorConceptos.appendChild(crearConcepto());
-  }
-} else {
-  // Si no hay datos previamente guardados, crear un concepto vacío inicial
-  contenedorConceptos.appendChild(crearConcepto());
-}
-
-document.getElementById("agregarConcepto").addEventListener("click", () => {
-  contenedorConceptos.appendChild(crearConcepto());
-});
-
 function mostrarError(mensaje) {
   const divError = document.getElementById("mensajeError");
   divError.innerText = mensaje;
@@ -115,6 +80,48 @@ function ocultarError() {
   divError.style.display = "none";
   divError.innerText = "";
 }
+
+// Cargar estado inicial al entrar a la página
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const negocio = urlParams.get("emisorNegocio");
+
+  if (negocio) {
+    document.getElementById("tituloNegocio").innerText = `${negocio} - Nueva factura`;
+  }
+
+  const contenedorConceptos = document.getElementById("conceptosContainer");
+  contenedorConceptos.innerHTML = ""; // Limpiar contenedor por seguridad
+
+  const datosGuardados = urlParams.get("datos");
+
+  if (datosGuardados) {
+    try {
+      const factura = JSON.parse(decodeURIComponent(datosGuardados));
+      
+      document.getElementById("numeroFactura").value = factura.numeroFactura || "";
+      document.getElementById("fecha").value = factura.fecha || "";
+
+      if (factura.conceptos && factura.conceptos.length > 0) {
+        factura.conceptos.forEach(conceptoData => {
+          contenedorConceptos.appendChild(crearConcepto(conceptoData));
+        });
+      } else {
+        contenedorConceptos.appendChild(crearConcepto());
+      }
+    } catch (e) {
+      console.error("Error al cargar datos guardados:", e);
+      contenedorConceptos.appendChild(crearConcepto());
+    }
+  } else {
+    // Si NO hay parámetro datos (Nueva Factura), crea un concepto en blanco
+    contenedorConceptos.appendChild(crearConcepto());
+  }
+});
+
+document.getElementById("agregarConcepto").addEventListener("click", () => {
+  document.getElementById("conceptosContainer").appendChild(crearConcepto());
+});
 
 document.getElementById("generarFactura").addEventListener("click", () => {
   ocultarError();
@@ -184,7 +191,7 @@ document.getElementById("generarFactura").addEventListener("click", () => {
   };
 
   const targetParams = new URLSearchParams(window.location.search);
-  targetParams.set("datos", JSON.stringify(factura));
+  targetParams.set("datos", encodeURIComponent(JSON.stringify(factura)));
 
   window.location.href = `factura.html?${targetParams.toString()}`;
 });
