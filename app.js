@@ -51,11 +51,9 @@ function crearConcepto() {
   // Evento para eliminar la fila al hacer clic en la "X"
   btnEliminar.addEventListener("click", () => {
     const contenedor = document.getElementById("conceptosContainer");
-    // Solo permitir eliminar si hay más de un concepto visible
     if (contenedor.querySelectorAll(".concepto").length > 1) {
       div.remove();
     } else {
-      // Si es la única fila, limpiar los campos en lugar de borrarla
       select.value = "Piercing";
       otroInput.style.display = "none";
       otroInput.value = "";
@@ -82,37 +80,87 @@ if (negocio) {
   document.getElementById("tituloNegocio").innerText = `${negocio} - Nueva factura`;
 }
 
+function mostrarError(mensaje) {
+  const divError = document.getElementById("mensajeError");
+  divError.innerText = mensaje;
+  divError.style.display = "block";
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function ocultarError() {
+  const divError = document.getElementById("mensajeError");
+  divError.style.display = "none";
+  divError.innerText = "";
+}
+
 document.getElementById("generarFactura").addEventListener("click", () => {
-  const numeroFactura = document.getElementById("numeroFactura").value;
+  ocultarError();
+
+  const numeroFactura = document.getElementById("numeroFactura").value.trim();
   const fecha = document.getElementById("fecha").value;
+
+  // 1. Validar número de factura
+  if (!numeroFactura) {
+    mostrarError("Por favor, introduce el número de factura.");
+    return;
+  }
+
+  // 2. Validar fecha
+  if (!fecha) {
+    mostrarError("Por favor, selecciona una fecha para la factura.");
+    return;
+  }
+
   const conceptosDOM = document.querySelectorAll(".concepto");
   const conceptos = [];
+  let errorEncontrado = false;
 
-  conceptosDOM.forEach(c => {
+  conceptosDOM.forEach((c, index) => {
+    if (errorEncontrado) return;
+
     const select = c.querySelector(".descripcion");
     let descripcion = select.value;
+    const otroInput = c.querySelector(".otroConcepto");
 
     if (descripcion === "Otro") {
-      descripcion = c.querySelector(".otroConcepto").value;
+      descripcion = otroInput.value.trim();
+      if (!descripcion) {
+        mostrarError(`En el concepto #${index + 1}, debes escribir una descripción.`);
+        errorEncontrado = true;
+        return;
+      }
     }
 
-    const cantidad = parseFloat(c.querySelector(".cantidad").value) || 0;
-    const precioInput = c.querySelector(".precio").value;
+    const cantidadInput = c.querySelector(".cantidad").value;
+    const cantidad = parseFloat(cantidadInput);
+
+    if (isNaN(cantidad) || cantidad <= 0) {
+      mostrarError(`En el concepto #${index + 1}, la cantidad debe ser mayor que 0.`);
+      errorEncontrado = true;
+      return;
+    }
+
+    const precioInput = c.querySelector(".precio").value.trim();
     const precio = parseFloat(precioInput);
 
-    // Solo se tiene en cuenta si el precio se ha rellenado, no está vacío y es mayor que 0
-    if (precioInput !== "" && !isNaN(precio) && precio > 0 && cantidad > 0) {
-      conceptos.push({
-        descripcion: descripcion || "Concepto",
-        cantidad,
-        precio
-      });
+    // Validar si el precio está vacío, no es un número, o es <= 0
+    if (precioInput === "" || isNaN(precio) || precio <= 0) {
+      mostrarError(`En el concepto #${index + 1}, debes indicar un precio mayor que 0€.`);
+      errorEncontrado = true;
+      return;
     }
+
+    conceptos.push({
+      descripcion,
+      cantidad,
+      precio
+    });
   });
 
-  // Validación básica: si no hay conceptos válidos
+  if (errorEncontrado) return;
+
   if (conceptos.length === 0) {
-    alert("Por favor, introduce al menos un concepto con un precio válido.");
+    mostrarError("Debes incluir al menos un concepto en la factura.");
     return;
   }
 
@@ -122,7 +170,7 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     conceptos
   };
 
-  // Mantenemos todos los parámetros actuales de la URL y añadimos los datos de la factura
+  // Mantenemos los parámetros de la URL y añadimos la factura
   const targetParams = new URLSearchParams(window.location.search);
   targetParams.set("datos", JSON.stringify(factura));
 
