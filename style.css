@@ -50,34 +50,41 @@ select {
   width: 100%;
 }
 
-/* FILA DE CONCEPTOS OPTIMIZADA PARA MÓVIL */
+/* FILA DE CONCEPTOS ULTRA OPTIMIZADA PARA MÓVIL */
 .concepto {
   display: grid;
-  grid-template-columns: 1fr 48px 1fr 32px;
-  gap: 4px;
+  grid-template-columns: 1fr 38px 1fr 30px;
+  gap: 3px;
   margin-bottom: 6px;
   align-items: center;
 }
 
 .concepto input,
 .concepto select {
-  padding: 6px 2px;
+  padding: 5px 2px;
   font-size: 13px;
   box-sizing: border-box;
 }
 
-/* Selector y campo de cantidad personalizada (+9) */
+/* Selector compacto para 1-9 / +9 */
 .cantidadSelect {
   text-align: center;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  font-size: 12px !important;
 }
 
+/* Campo personalizado para +9 */
 .cantidadInput {
   grid-column: 2;
   margin-top: 2px;
   text-align: center;
+  width: 100%;
+  padding: 4px 0 !important;
+  font-size: 12px !important;
 }
 
-/* Campo para texto cuando selecciona 'Otro' en concepto */
+/* Campo para texto adicional al seleccionar 'Otro' */
 .otroConcepto {
   margin-top: 4px;
   grid-column: 1 / -1;
@@ -88,11 +95,11 @@ select {
   background: #e74c3c;
   color: white;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 5px 0;
   text-align: center;
   line-height: 1;
   width: 100%;
