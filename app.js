@@ -1,26 +1,30 @@
-function crearConcepto() {
+function crearConcepto(datos = null) {
   const div = document.createElement("div");
   div.classList.add("concepto");
 
+  const descripcion = datos ? datos.descripcion : "Piercing";
+  const esOtro = datos && !["Piercing", "Tatuaje", "Joyería"].includes(descripcion);
+
   div.innerHTML = `
     <select class="descripcion">
-      <option value="Piercing">Piercing</option>
-      <option value="Tatuaje">Tatuaje</option>
-      <option value="Joyería">Joyería</option>
-      <option value="Otro">Otro...</option>
+      <option value="Piercing" ${descripcion === "Piercing" ? "selected" : ""}>Piercing</option>
+      <option value="Tatuaje" ${descripcion === "Tatuaje" ? "selected" : ""}>Tatuaje</option>
+      <option value="Joyería" ${descripcion === "Joyería" ? "selected" : ""}>Joyería</option>
+      <option value="Otro" ${esOtro ? "selected" : ""}>Otro...</option>
     </select>
 
     <input
       type="text"
       class="otroConcepto"
       placeholder="Escribir concepto"
-      style="display:none;width:100%;"
+      style="${esOtro ? 'display:block;width:100%;' : 'display:none;width:100%;'}"
+      value="${esOtro ? descripcion : ''}"
     >
 
     <input
       type="number"
       class="cantidad"
-      value="1"
+      value="${datos ? datos.cantidad : 1}"
       min="1"
     >
 
@@ -30,6 +34,7 @@ function crearConcepto() {
       placeholder="Precio"
       min="0"
       step="0.01"
+      value="${datos ? datos.precio : ''}"
     >
 
     <button type="button" class="btnEliminar" title="Eliminar concepto">&times;</button>
@@ -39,7 +44,6 @@ function crearConcepto() {
   const otroInput = div.querySelector(".otroConcepto");
   const btnEliminar = div.querySelector(".btnEliminar");
 
-  // Mostrar / ocultar campo "Otro"
   select.addEventListener("change", () => {
     if (select.value === "Otro") {
       otroInput.style.display = "block";
@@ -48,7 +52,6 @@ function crearConcepto() {
     }
   });
 
-  // Evento para eliminar la fila al hacer clic en la "X"
   btnEliminar.addEventListener("click", () => {
     const contenedor = document.getElementById("conceptosContainer");
     if (contenedor.querySelectorAll(".concepto").length > 1) {
@@ -65,20 +68,40 @@ function crearConcepto() {
   return div;
 }
 
-// Inicializar primer concepto
-document.getElementById("conceptosContainer").appendChild(crearConcepto());
-
-document.getElementById("agregarConcepto").addEventListener("click", () => {
-  const container = document.getElementById("conceptosContainer");
-  container.appendChild(crearConcepto());
-});
-
-// Mostrar el nombre del negocio en el título si viene por URL
+// Cargar datos en el formulario si existen en la URL (al pulsar "Volver y editar")
 const urlParams = new URLSearchParams(window.location.search);
 const negocio = urlParams.get("emisorNegocio");
 if (negocio) {
   document.getElementById("tituloNegocio").innerText = `${negocio} - Nueva factura`;
 }
+
+const datosGuardados = urlParams.get("datos");
+const contenedorConceptos = document.getElementById("conceptosContainer");
+
+if (datosGuardados) {
+  try {
+    const factura = JSON.parse(datosGuardados);
+    document.getElementById("numeroFactura").value = factura.numeroFactura || "";
+    document.getElementById("fecha").value = factura.fecha || "";
+
+    if (factura.conceptos && factura.conceptos.length > 0) {
+      factura.conceptos.forEach(conceptoData => {
+        contenedorConceptos.appendChild(crearConcepto(conceptoData));
+      });
+    } else {
+      contenedorConceptos.appendChild(crearConcepto());
+    }
+  } catch (e) {
+    contenedorConceptos.appendChild(crearConcepto());
+  }
+} else {
+  // Si no hay datos previamente guardados, crear un concepto vacío inicial
+  contenedorConceptos.appendChild(crearConcepto());
+}
+
+document.getElementById("agregarConcepto").addEventListener("click", () => {
+  contenedorConceptos.appendChild(crearConcepto());
+});
 
 function mostrarError(mensaje) {
   const divError = document.getElementById("mensajeError");
@@ -99,13 +122,11 @@ document.getElementById("generarFactura").addEventListener("click", () => {
   const numeroFactura = document.getElementById("numeroFactura").value.trim();
   const fecha = document.getElementById("fecha").value;
 
-  // 1. Validar número de factura
   if (!numeroFactura) {
     mostrarError("Por favor, introduce el número de factura.");
     return;
   }
 
-  // 2. Validar fecha
   if (!fecha) {
     mostrarError("Por favor, selecciona una fecha para la factura.");
     return;
@@ -114,7 +135,6 @@ document.getElementById("generarFactura").addEventListener("click", () => {
   const conceptosDOM = Array.from(document.querySelectorAll(".concepto"));
   const conceptos = [];
 
-  // Usamos for...of para poder cortar la ejecución con return al primer error
   for (let index = 0; index < conceptosDOM.length; index++) {
     const c = conceptosDOM[index];
     const select = c.querySelector(".descripcion");
@@ -140,7 +160,6 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     const precioInput = c.querySelector(".precio").value.trim();
     const precio = parseFloat(precioInput);
 
-    // Si algún precio está vacío, no es número o es <= 0, se bloquea la salida
     if (precioInput === "" || isNaN(precio) || precio <= 0) {
       mostrarError(`En el concepto #${index + 1}, debes indicar un precio válido mayor que 0€.`);
       return;
@@ -164,7 +183,6 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     conceptos
   };
 
-  // Mantenemos los parámetros de la URL y añadimos la factura
   const targetParams = new URLSearchParams(window.location.search);
   targetParams.set("datos", JSON.stringify(factura));
 
