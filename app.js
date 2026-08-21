@@ -5,7 +5,6 @@ function crearConcepto(datos = null) {
   const descripcion = datos ? datos.descripcion : "Piercing";
   const esOtroDesc = datos && !["Piercing", "Tatuaje", "Joyería"].includes(descripcion);
 
-  // Determinar si la cantidad es estándar (1-9) o personalizada
   const cantidadInicial = datos ? datos.cantidad : 1;
   const esCantidadOtro = cantidadInicial > 9;
 
@@ -17,7 +16,7 @@ function crearConcepto(datos = null) {
       <option value="Otro" ${esOtroDesc ? "selected" : ""}>Otro...</option>
     </select>
 
-    <select class="cantidadSelect">
+    <select class="cantidadSelect" style="${esCantidadOtro ? 'display:none;' : 'display:block;'}">
       <option value="1" ${cantidadInicial === 1 ? "selected" : ""}>1</option>
       <option value="2" ${cantidadInicial === 2 ? "selected" : ""}>2</option>
       <option value="3" ${cantidadInicial === 3 ? "selected" : ""}>3</option>
@@ -69,12 +68,12 @@ function crearConcepto(datos = null) {
     otroDescInput.style.display = selectDesc.value === "Otro" ? "block" : "none";
   });
 
+  // Oculta el selector e inserta el input numérico en la misma posición de la fila
   selectCant.addEventListener("change", () => {
     if (selectCant.value === "Otro") {
+      selectCant.style.display = "none";
       otroCantInput.style.display = "block";
       otroCantInput.focus();
-    } else {
-      otroCantInput.style.display = "none";
     }
   });
 
@@ -87,6 +86,7 @@ function crearConcepto(datos = null) {
       otroDescInput.style.display = "none";
       otroDescInput.value = "";
       selectCant.value = "1";
+      selectCant.style.display = "block";
       otroCantInput.style.display = "none";
       otroCantInput.value = "";
       div.querySelector(".precio").value = "";
@@ -182,11 +182,11 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     }
 
     const selectCant = c.querySelector(".cantidadSelect");
+    const cantidadInput = c.querySelector(".cantidadInput");
     let cantidad;
 
-    if (selectCant.value === "Otro") {
-      const cantidadCustom = c.querySelector(".cantidadInput").value.trim();
-      cantidad = parseFloat(cantidadCustom);
+    if (selectCant.style.display === "none") {
+      cantidad = parseFloat(cantidadInput.value.trim());
       if (isNaN(cantidad) || cantidad <= 0) {
         mostrarError(`En el concepto #${index + 1}, introduce una cantidad válida mayor que 0.`);
         return;
