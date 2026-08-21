@@ -1,7 +1,18 @@
+* {
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
   background: #f3f3f3;
-  margin: 0;
   padding: 5px;
   font-size: 14px;
 }
@@ -36,33 +47,62 @@ input,
 select {
   padding: 7px;
   font-size: 14px;
+  width: 100%;
 }
 
+/* FILA DE CONCEPTOS OPTIMIZADA PARA MÓVIL */
 .concepto {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 38px;
-  gap: 6px;
+  grid-template-columns: 1fr 48px 1fr 32px;
+  gap: 4px;
   margin-bottom: 6px;
   align-items: center;
 }
 
+.concepto input,
+.concepto select {
+  padding: 6px 2px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* Selector y campo de cantidad personalizada (+9) */
+.cantidadSelect {
+  text-align: center;
+}
+
+.cantidadInput {
+  grid-column: 2;
+  margin-top: 2px;
+  text-align: center;
+}
+
+/* Campo para texto cuando selecciona 'Otro' en concepto */
+.otroConcepto {
+  margin-top: 4px;
+  grid-column: 1 / -1;
+}
+
+/* Botón eliminar (X) */
 .btnEliminar {
   background: #e74c3c;
   color: white;
   border: none;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   border-radius: 5px;
   cursor: pointer;
-  padding: 4px 0;
+  padding: 6px 0;
   text-align: center;
   line-height: 1;
+  width: 100%;
 }
 
 .btnEliminar:hover {
   background: #c0392b;
 }
 
+/* BOTONES GENERALES */
 button {
   padding: 8px;
   cursor: pointer;
@@ -79,8 +119,23 @@ button {
   bottom: 10px;
 }
 
-/* FACTURA */
+hr {
+  margin: 8px 0;
+}
 
+/* MENSAJES DE ERROR */
+.alerta-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 10px 14px;
+  border-radius: 5px;
+  margin-bottom: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ESTILOS DE VISTA DE FACTURA / TICKET */
 .ticketBody {
   background: white;
 }
@@ -159,7 +214,7 @@ td {
   margin: 0;
 }
 
-/* BOTONES FACTURA */
+/* BOTONES DE NAVEGACIÓN EN LA FACTURA */
 .acciones {
   display: flex;
   justify-content: center;
@@ -192,44 +247,12 @@ td {
   background: #219150;
 }
 
-.otroConcepto {
-  margin-top: 10px;
-  grid-column: 1 / -1;
-}
-
-hr {
-  margin: 8px 0;
-}
-
-.alerta-error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  padding: 10px 14px;
-  border-radius: 5px;
-  margin-bottom: 12px;
-  font-weight: bold;
-  text-align: center;
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
+/* CONFIGURACIÓN PARA IMPRESIÓN Y PDF */
 @page {
   size: auto;
   margin: 8mm;
 }
 
-/* OCULTAR ELEMENTOS EN LA IMPRESIÓN / PDF */
 @media print {
   .acciones,
   .acciones * {
