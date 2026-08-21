@@ -217,3 +217,35 @@ body {
   font-weight: bold;
   text-align: center;
 }
+
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.btnSecundario {
+  background: #555555;
+  color: white;
+  border: none;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btnSecundario:hover {
+  background: #333333;
+}
+
+.btnPrint {
+  background: #27ae60;
+  color: white;
+  font-weight: bold;
+}
+
+.btnPrint:hover {
+  background: #219150;
+}
