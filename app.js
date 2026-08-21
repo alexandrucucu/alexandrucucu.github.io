@@ -81,7 +81,7 @@ function ocultarError() {
   divError.innerText = "";
 }
 
-// Cargar estado inicial al entrar a la página
+// Cargar estado inicial al abrir la página
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const negocio = urlParams.get("emisorNegocio");
@@ -91,13 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const contenedorConceptos = document.getElementById("conceptosContainer");
-  contenedorConceptos.innerHTML = ""; // Limpiar contenedor por seguridad
+  contenedorConceptos.innerHTML = "";
 
   const datosGuardados = urlParams.get("datos");
 
   if (datosGuardados) {
     try {
-      const factura = JSON.parse(decodeURIComponent(datosGuardados));
+      const factura = JSON.parse(datosGuardados);
       
       document.getElementById("numeroFactura").value = factura.numeroFactura || "";
       document.getElementById("fecha").value = factura.fecha || "";
@@ -110,11 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
         contenedorConceptos.appendChild(crearConcepto());
       }
     } catch (e) {
-      console.error("Error al cargar datos guardados:", e);
+      console.error("Error al cargar los datos guardados:", e);
       contenedorConceptos.appendChild(crearConcepto());
     }
   } else {
-    // Si NO hay parámetro datos (Nueva Factura), crea un concepto en blanco
     contenedorConceptos.appendChild(crearConcepto());
   }
 });
@@ -191,7 +190,7 @@ document.getElementById("generarFactura").addEventListener("click", () => {
   };
 
   const targetParams = new URLSearchParams(window.location.search);
-  targetParams.set("datos", encodeURIComponent(JSON.stringify(factura)));
+  targetParams.set("datos", JSON.stringify(factura));
 
   window.location.href = `factura.html?${targetParams.toString()}`;
 });
