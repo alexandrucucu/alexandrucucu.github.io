@@ -68,72 +68,76 @@
   </div>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
 
-  // Cargar datos del emisor desde la URL
-  document.getElementById("emisorNegocio").innerText = params.get("emisorNegocio") || "";
-  document.getElementById("emisorNombre").innerText = params.get("emisorNombre") || "";
-  document.getElementById("emisorDni").innerText = params.get("emisorDni") || "";
-  document.getElementById("emisorDir").innerText = params.get("emisorDir") || "";
-  document.getElementById("emisorPoblacion").innerText = params.get("emisorPoblacion") || "";
-  document.getElementById("emisorTel").innerText = params.get("emisorTel") || "";
-  document.getElementById("emisorEmail").innerText = params.get("emisorEmail") || "";
+    // Cargar datos del emisor
+    document.getElementById("emisorNegocio").innerText = params.get("emisorNegocio") || "";
+    document.getElementById("emisorNombre").innerText = params.get("emisorNombre") || "";
+    document.getElementById("emisorDni").innerText = params.get("emisorDni") || "";
+    document.getElementById("emisorDir").innerText = params.get("emisorDir") || "";
+    document.getElementById("emisorPoblacion").innerText = params.get("emisorPoblacion") || "";
+    document.getElementById("emisorTel").innerText = params.get("emisorTel") || "";
+    document.getElementById("emisorEmail").innerText = params.get("emisorEmail") || "";
 
-  // Cargar datos de la factura
-  const datosParam = params.get("datos");
+    // Cargar datos de la factura
+    const datosString = params.get("datos");
 
-  if (datosParam) {
-    let datos;
-    try {
-      datos = JSON.parse(decodeURIComponent(datosParam));
-    } catch(e) {
-      datos = JSON.parse(datosParam);
+    if (datosString) {
+      try {
+        const datos = JSON.parse(datosString);
+
+        const numFactura = datos.numeroFactura || "";
+        document.getElementById("numeroFactura").innerText = "Factura: " + numFactura;
+
+        if (numFactura) {
+          document.title = `Factura_${numFactura}`;
+        } else {
+          document.title = "Factura";
+        }
+
+        if (datos.fecha) {
+          const partesFecha = datos.fecha.split("-");
+          const fechaFormateada = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
+          document.getElementById("fechaFactura").innerText = "Fecha: " + fechaFormateada;
+        }
+
+        const tabla = document.getElementById("tablaConceptos");
+        tabla.innerHTML = "";
+        let total = 0;
+
+        if (datos.conceptos && Array.isArray(datos.conceptos)) {
+          datos.conceptos.forEach(c => {
+            const importe = c.cantidad * c.precio;
+            total += importe;
+
+            tabla.innerHTML += `
+              <tr>
+                <td>${c.descripcion}</td>
+                <td>${c.cantidad}</td>
+                <td>${c.precio.toFixed(2)}€</td>
+                <td>${importe.toFixed(2)}€</td>
+              </tr>
+            `;
+          });
+        }
+
+        document.getElementById("totalFactura").innerText = total.toFixed(2) + "€";
+      } catch (e) {
+        console.error("Error al procesar el JSON de la factura:", e);
+      }
     }
 
-    const numFactura = datos.numeroFactura || "";
-    document.getElementById("numeroFactura").innerText = "Factura: " + numFactura;
-
-    if (numFactura) {
-      document.title = `Factura_${numFactura}`;
-    } else {
-      document.title = "Factura";
-    }
-
-    if (datos.fecha) {
-      const partesFecha = datos.fecha.split("-");
-      const fechaFormateada = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
-      document.getElementById("fechaFactura").innerText = "Fecha: " + fechaFormateada;
-    }
-
-    const tabla = document.getElementById("tablaConceptos");
-    let total = 0;
-
-    datos.conceptos.forEach(c => {
-      const importe = c.cantidad * c.precio;
-      total += importe;
-
-      tabla.innerHTML += `
-        <tr>
-          <td>${c.descripcion}</td>
-          <td>${c.cantidad}</td>
-          <td>${c.precio.toFixed(2)}€</td>
-          <td>${importe.toFixed(2)}€</td>
-        </tr>
-      `;
+    // Eventos de botones
+    document.getElementById("btnEditar").addEventListener("click", () => {
+      window.location.href = `index.html?${params.toString()}`;
     });
 
-    document.getElementById("totalFactura").innerText = total.toFixed(2) + "€";
-  }
-
-  // BOTONES DE NAVEGACIÓN
-  document.getElementById("btnEditar").addEventListener("click", () => {
-    window.location.href = `index.html?${params.toString()}`;
-  });
-
-  document.getElementById("btnNueva").addEventListener("click", () => {
-    const paramsLimpios = new URLSearchParams(window.location.search);
-    paramsLimpios.delete("datos");
-    window.location.href = `index.html?${paramsLimpios.toString()}`;
+    document.getElementById("btnNueva").addEventListener("click", () => {
+      const paramsLimpios = new URLSearchParams(window.location.search);
+      paramsLimpios.delete("datos");
+      window.location.href = `index.html?${paramsLimpios.toString()}`;
+    });
   });
 </script>
 
