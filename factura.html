@@ -56,8 +56,14 @@
   </div>
 
   <div class="acciones">
-    <button onclick="window.print()">
-      Imprimir / Guardar PDF
+    <button type="button" id="btnEditar" class="btnSecundario">
+      ✏️ Volver y editar
+    </button>
+    <button type="button" onclick="window.print()" class="btnPrint">
+      🖨️ Imprimir / Guardar PDF
+    </button>
+    <button type="button" id="btnNueva" class="btnSecundario">
+      ➕ Nueva factura
     </button>
   </div>
 
@@ -82,7 +88,6 @@
     const numFactura = datos.numeroFactura || "";
     document.getElementById("numeroFactura").innerText = "Factura: " + numFactura;
 
-    // Cambiar el título del documento para que el PDF se descargue con el número de factura
     if (numFactura) {
       document.title = `Factura_${numFactura}`;
     } else {
@@ -114,6 +119,20 @@
 
     document.getElementById("totalFactura").innerText = total.toFixed(2) + "€";
   }
+
+  // --- BOTONES DE NAVEGACIÓN ---
+
+  // 1. Volver y editar (mantiene los datos en la URL para volver a rellenar el formulario)
+  document.getElementById("btnEditar").addEventListener("click", () => {
+    window.location.href = `index.html?${params.toString()}`;
+  });
+
+  // 2. Nueva factura (elimina el parámetro 'datos' para que el formulario aparezca limpio)
+  document.getElementById("btnNueva").addEventListener("click", () => {
+    const paramsLimpios = new URLSearchParams(window.location.search);
+    paramsLimpios.delete("datos");
+    window.location.href = `index.html?${paramsLimpios.toString()}`;
+  });
 </script>
 
 </body>
