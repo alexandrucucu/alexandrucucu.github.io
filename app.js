@@ -111,13 +111,12 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     return;
   }
 
-  const conceptosDOM = document.querySelectorAll(".concepto");
+  const conceptosDOM = Array.from(document.querySelectorAll(".concepto"));
   const conceptos = [];
-  let errorEncontrado = false;
 
-  conceptosDOM.forEach((c, index) => {
-    if (errorEncontrado) return;
-
+  // Usamos for...of para poder cortar la ejecución con return al primer error
+  for (let index = 0; index < conceptosDOM.length; index++) {
+    const c = conceptosDOM[index];
     const select = c.querySelector(".descripcion");
     let descripcion = select.value;
     const otroInput = c.querySelector(".otroConcepto");
@@ -126,7 +125,6 @@ document.getElementById("generarFactura").addEventListener("click", () => {
       descripcion = otroInput.value.trim();
       if (!descripcion) {
         mostrarError(`En el concepto #${index + 1}, debes escribir una descripción.`);
-        errorEncontrado = true;
         return;
       }
     }
@@ -136,17 +134,15 @@ document.getElementById("generarFactura").addEventListener("click", () => {
 
     if (isNaN(cantidad) || cantidad <= 0) {
       mostrarError(`En el concepto #${index + 1}, la cantidad debe ser mayor que 0.`);
-      errorEncontrado = true;
       return;
     }
 
     const precioInput = c.querySelector(".precio").value.trim();
     const precio = parseFloat(precioInput);
 
-    // Validar si el precio está vacío, no es un número, o es <= 0
+    // Si algún precio está vacío, no es número o es <= 0, se bloquea la salida
     if (precioInput === "" || isNaN(precio) || precio <= 0) {
-      mostrarError(`En el concepto #${index + 1}, debes indicar un precio mayor que 0€.`);
-      errorEncontrado = true;
+      mostrarError(`En el concepto #${index + 1}, debes indicar un precio válido mayor que 0€.`);
       return;
     }
 
@@ -155,9 +151,7 @@ document.getElementById("generarFactura").addEventListener("click", () => {
       cantidad,
       precio
     });
-  });
-
-  if (errorEncontrado) return;
+  }
 
   if (conceptos.length === 0) {
     mostrarError("Debes incluir al menos un concepto en la factura.");
