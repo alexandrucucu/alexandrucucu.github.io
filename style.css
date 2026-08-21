@@ -50,56 +50,52 @@ select {
   width: 100%;
 }
 
-/* FILA DE CONCEPTOS ULTRA OPTIMIZADA PARA MÓVIL */
+/* FILA DE CONCEPTOS EN 1 LÍNEA:
+   1. Descripción (1.2fr)
+   2. Cantidad / Input personalizado (55px)
+   3. Precio (0.8fr)
+   4. Botón X (32px)
+*/
 .concepto {
   display: grid;
-  grid-template-columns: 1fr 38px 1fr 30px;
-  gap: 3px;
+  grid-template-columns: 1.2fr 55px 0.8fr 32px;
+  gap: 5px;
   margin-bottom: 6px;
   align-items: center;
 }
 
 .concepto input,
 .concepto select {
-  padding: 5px 2px;
+  padding: 6px 3px;
   font-size: 13px;
   box-sizing: border-box;
 }
 
-/* Selector compacto para 1-9 / +9 */
-.cantidadSelect {
-  text-align: center;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  font-size: 12px !important;
-}
-
-/* Campo personalizado para +9 */
+.cantidadSelect,
 .cantidadInput {
-  grid-column: 2;
-  margin-top: 2px;
   text-align: center;
   width: 100%;
-  padding: 4px 0 !important;
-  font-size: 12px !important;
+  margin: 0 !important;
 }
 
-/* Campo para texto adicional al seleccionar 'Otro' */
+.cantidadInput {
+  padding: 5px 2px !important;
+}
+
 .otroConcepto {
   margin-top: 4px;
   grid-column: 1 / -1;
 }
 
-/* Botón eliminar (X) */
 .btnEliminar {
   background: #e74c3c;
   color: white;
   border: none;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: bold;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
-  padding: 5px 0;
+  padding: 6px 0;
   text-align: center;
   line-height: 1;
   width: 100%;
@@ -142,7 +138,7 @@ hr {
   text-align: center;
 }
 
-/* ESTILOS DE VISTA DE FACTURA / TICKET */
+/* VISTA FACTURA / TICKET */
 .ticketBody {
   background: white;
 }
@@ -221,7 +217,7 @@ td {
   margin: 0;
 }
 
-/* BOTONES DE NAVEGACIÓN EN LA FACTURA */
+/* BOTONES NAVEGACIÓN FACTURA */
 .acciones {
   display: flex;
   justify-content: center;
@@ -254,7 +250,6 @@ td {
   background: #219150;
 }
 
-/* CONFIGURACIÓN PARA IMPRESIÓN Y PDF */
 @page {
   size: auto;
   margin: 8mm;
