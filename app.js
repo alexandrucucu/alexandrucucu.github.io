@@ -31,16 +31,36 @@ function crearConcepto() {
       min="0"
       step="0.01"
     >
+
+    <button type="button" class="btnEliminar" title="Eliminar concepto">&times;</button>
   `;
 
   const select = div.querySelector(".descripcion");
   const otroInput = div.querySelector(".otroConcepto");
+  const btnEliminar = div.querySelector(".btnEliminar");
 
+  // Mostrar / ocultar campo "Otro"
   select.addEventListener("change", () => {
     if (select.value === "Otro") {
       otroInput.style.display = "block";
     } else {
       otroInput.style.display = "none";
+    }
+  });
+
+  // Evento para eliminar la fila al hacer clic en la "X"
+  btnEliminar.addEventListener("click", () => {
+    const contenedor = document.getElementById("conceptosContainer");
+    // Solo permitir eliminar si hay más de un concepto visible
+    if (contenedor.querySelectorAll(".concepto").length > 1) {
+      div.remove();
+    } else {
+      // Si es la única fila, limpiar los campos en lugar de borrarla
+      select.value = "Piercing";
+      otroInput.style.display = "none";
+      otroInput.value = "";
+      div.querySelector(".cantidad").value = "1";
+      div.querySelector(".precio").value = "";
     }
   });
 
@@ -77,14 +97,24 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     }
 
     const cantidad = parseFloat(c.querySelector(".cantidad").value) || 0;
-    const precio = parseFloat(c.querySelector(".precio").value) || 0;
+    const precioInput = c.querySelector(".precio").value;
+    const precio = parseFloat(precioInput);
 
-    conceptos.push({
-      descripcion,
-      cantidad,
-      precio
-    });
+    // Solo se tiene en cuenta si el precio se ha rellenado, no está vacío y es mayor que 0
+    if (precioInput !== "" && !isNaN(precio) && precio > 0 && cantidad > 0) {
+      conceptos.push({
+        descripcion: descripcion || "Concepto",
+        cantidad,
+        precio
+      });
+    }
   });
+
+  // Validación básica: si no hay conceptos válidos
+  if (conceptos.length === 0) {
+    alert("Por favor, introduce al menos un concepto con un precio válido.");
+    return;
+  }
 
   const factura = {
     numeroFactura,
