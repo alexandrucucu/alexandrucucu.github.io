@@ -70,7 +70,7 @@
 <script>
   const params = new URLSearchParams(window.location.search);
 
-  // Cargar datos del emisor desde los parámetros URL
+  // Cargar datos del emisor desde la URL
   document.getElementById("emisorNegocio").innerText = params.get("emisorNegocio") || "";
   document.getElementById("emisorNombre").innerText = params.get("emisorNombre") || "";
   document.getElementById("emisorDni").innerText = params.get("emisorDni") || "";
@@ -80,10 +80,15 @@
   document.getElementById("emisorEmail").innerText = params.get("emisorEmail") || "";
 
   // Cargar datos de la factura
-  const datosString = params.get("datos");
+  const datosParam = params.get("datos");
 
-  if (datosString) {
-    const datos = JSON.parse(datosString);
+  if (datosParam) {
+    let datos;
+    try {
+      datos = JSON.parse(decodeURIComponent(datosParam));
+    } catch(e) {
+      datos = JSON.parse(datosParam);
+    }
 
     const numFactura = datos.numeroFactura || "";
     document.getElementById("numeroFactura").innerText = "Factura: " + numFactura;
@@ -120,14 +125,11 @@
     document.getElementById("totalFactura").innerText = total.toFixed(2) + "€";
   }
 
-  // --- BOTONES DE NAVEGACIÓN ---
-
-  // 1. Volver y editar (mantiene los datos en la URL para volver a rellenar el formulario)
+  // BOTONES DE NAVEGACIÓN
   document.getElementById("btnEditar").addEventListener("click", () => {
     window.location.href = `index.html?${params.toString()}`;
   });
 
-  // 2. Nueva factura (elimina el parámetro 'datos' para que el formulario aparezca limpio)
   document.getElementById("btnNueva").addEventListener("click", () => {
     const paramsLimpios = new URLSearchParams(window.location.search);
     paramsLimpios.delete("datos");
