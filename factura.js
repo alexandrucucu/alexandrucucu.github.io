@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tel = emisor.tel || urlParams.get("emisorTel") || "";
     const email = emisor.email || urlParams.get("emisorEmail") || "";
 
-    // Renderizar datos del emisor exactos a la segunda captura
+    // Renderizar datos del emisor
     document.getElementById("nombreEmisor").innerText = negocio;
     
     const elNombre = document.getElementById("emisorNombre");
@@ -42,15 +42,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const elEmail = document.getElementById("emisorEmail");
     if (elEmail) elEmail.innerText = email;
 
-    // 2. DATOS GENERALES DE LA FACTURA
+    // 2. DATOS GENERALES Y NOMBRE DEL ARCHIVO PDF
     const elNum = document.getElementById("numFactura");
-    if (elNum) elNum.innerText = factura.numeroFactura || "";
+    const numFactura = factura.numeroFactura || "";
+    if (elNum) elNum.innerText = numFactura;
     
+    // CAMBIO CLAVE: Cambia el título de la página para concatenar el número de factura al guardar el PDF
+    if (numFactura) {
+      document.title = `Factura_${numFactura}`;
+    } else {
+      document.title = "Factura";
+    }
+
     const elFecha = document.getElementById("fechaFactura");
     if (elFecha && factura.fecha) {
       const partes = factura.fecha.split("-");
       if (partes.length === 3) {
-        // Formato DD-MM-YYYY idéntico a la segunda captura
         elFecha.innerText = `${partes[2]}-${partes[1]}-${partes[0]}`;
       } else {
         elFecha.innerText = factura.fecha;
