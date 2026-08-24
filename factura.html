@@ -2,144 +2,69 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Factura</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="ticketBody">
+  <div class="ticket">
+    <h1 id="tipoFactura">Factura simplificada</h1>
+    <h2 id="nombreEmisor">Dakatattoo</h2>
 
-  <div class="ticket" id="ticket">
+    <!-- BLOQUE DE DATOS (EMISOR Y RECEPTOR) -->
+    <div id="bloquePersonas" class="bloque-personas">
+      <div class="bloque-datos">
+        <span class="tituloBloque">DATOS DEL EMISOR</span>
+        <p id="emisorNombre"><strong>Danielka García Guido</strong></p>
+        <p id="emisorDni">Y0743218x</p>
+        <p id="emisorDireccion">Av. Madrid 33, local izq</p>
+        <p id="emisorCiudad">Zaragoza, 50004</p>
+        <p id="emisorTelefono">684053376</p>
+        <p id="emisorEmail">Dakaguido@gmail.com</p>
+      </div>
 
-    <h1>Factura simplificada</h1>
-    <h2 id="emisorNegocio"></h2>
-
-    <div class="bloque">
-      <div class="tituloBloque">Datos del emisor</div>
-
-      <p><strong id="emisorNombre"></strong></p>
-      <p id="emisorDni"></p>
-      <p id="emisorDir"></p>
-      <p id="emisorPoblacion"></p>
-      <p id="emisorTel"></p>
-      <p id="emisorEmail"></p>
+      <div class="bloque-datos" id="bloqueReceptor" style="display: none;">
+        <span class="tituloBloque">DATOS DEL RECEPTOR</span>
+        <p id="receptorNombre"><strong>-</strong></p>
+        <p id="receptorDni">-</p>
+        <p id="receptorDireccion">-</p>
+        <p id="receptorCiudad">-</p>
+        <p id="receptorTelefono">-</p>
+        <p id="receptorEmail">-</p>
+      </div>
     </div>
 
     <div class="datosFactura">
-      <span id="numeroFactura"></span>
-      <span id="fechaFactura"></span>
+      <p><span class="etiquetaFondo">Número de factura:</span> <strong id="numFactura">-</strong></p>
+      <p><span class="etiquetaFondo">Fecha:</span> <strong id="fechaFactura">-</strong></p>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>Concepto</th>
+          <th>Concepto/Descripción</th>
           <th>Cantidad</th>
           <th>Precio</th>
           <th>Importe</th>
         </tr>
       </thead>
-
-      <tbody id="tablaConceptos">
-      </tbody>
+      <tbody id="tablaConceptos"></tbody>
     </table>
 
     <div class="total">
-
-      <div class="totalLinea">
-        <strong>Total factura:</strong>
+      <div class="totalLineaH2">
+        <span>Total factura:</span>
         <h2 id="totalFactura">0€</h2>
       </div>
-
-      <p>IVA incluido</p>
-
     </div>
 
+    <div class="acciones">
+      <button type="button" class="btnSecundario" id="btnEditar">Modificar</button>
+      <button type="button" class="btnSecundario" id="btnNueva">Nueva Factura</button>
+      <button type="button" class="btnSecundario btnPrint" onclick="window.print()">Imprimir / PDF</button>
+    </div>
   </div>
 
-  <div class="acciones">
-    <button type="button" id="btnEditar" class="btnSecundario">
-      ✏️ Volver y editar
-    </button>
-    <button type="button" onclick="window.print()" class="btnPrint">
-      🖨️ Imprimir / Guardar PDF
-    </button>
-    <button type="button" id="btnNueva" class="btnSecundario">
-      ➕ Nueva factura
-    </button>
-  </div>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const params = new URLSearchParams(window.location.search);
-
-    // Cargar datos del emisor
-    document.getElementById("emisorNegocio").innerText = params.get("emisorNegocio") || "";
-    document.getElementById("emisorNombre").innerText = params.get("emisorNombre") || "";
-    document.getElementById("emisorDni").innerText = params.get("emisorDni") || "";
-    document.getElementById("emisorDir").innerText = params.get("emisorDir") || "";
-    document.getElementById("emisorPoblacion").innerText = params.get("emisorPoblacion") || "";
-    document.getElementById("emisorTel").innerText = params.get("emisorTel") || "";
-    document.getElementById("emisorEmail").innerText = params.get("emisorEmail") || "";
-
-    // Cargar datos de la factura
-    const datosString = params.get("datos");
-
-    if (datosString) {
-      try {
-        const datos = JSON.parse(datosString);
-
-        const numFactura = datos.numeroFactura || "";
-        document.getElementById("numeroFactura").innerText = "Factura: " + numFactura;
-
-        if (numFactura) {
-          document.title = `Factura_${numFactura}`;
-        } else {
-          document.title = "Factura";
-        }
-
-        if (datos.fecha) {
-          const partesFecha = datos.fecha.split("-");
-          const fechaFormateada = partesFecha[2] + "-" + partesFecha[1] + "-" + partesFecha[0];
-          document.getElementById("fechaFactura").innerText = "Fecha: " + fechaFormateada;
-        }
-
-        const tabla = document.getElementById("tablaConceptos");
-        tabla.innerHTML = "";
-        let total = 0;
-
-        if (datos.conceptos && Array.isArray(datos.conceptos)) {
-          datos.conceptos.forEach(c => {
-            const importe = c.cantidad * c.precio;
-            total += importe;
-
-            tabla.innerHTML += `
-              <tr>
-                <td>${c.descripcion}</td>
-                <td>${c.cantidad}</td>
-                <td>${c.precio.toFixed(2)}€</td>
-                <td>${importe.toFixed(2)}€</td>
-              </tr>
-            `;
-          });
-        }
-
-        document.getElementById("totalFactura").innerText = total.toFixed(2) + "€";
-      } catch (e) {
-        console.error("Error al procesar el JSON de la factura:", e);
-      }
-    }
-
-    // Eventos de botones
-    document.getElementById("btnEditar").addEventListener("click", () => {
-      window.location.href = `index.html?${params.toString()}`;
-    });
-
-    document.getElementById("btnNueva").addEventListener("click", () => {
-      const paramsLimpios = new URLSearchParams(window.location.search);
-      paramsLimpios.delete("datos");
-      window.location.href = `index.html?${paramsLimpios.toString()}`;
-    });
-  });
-</script>
-
+  <script src="factura.js"></script>
 </body>
 </html>
