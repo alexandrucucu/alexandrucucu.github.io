@@ -1,6 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const datosParam = urlParams.get("datos");
+  const emisorNegocio = urlParams.get("emisorNegocio");
+
+  // CONFIGURACIÓN DE DATOS DEL EMISOR SEGÚN LA URL
+  if (emisorNegocio) {
+    const negocioNorm = emisorNegocio.toLowerCase();
+
+    if (negocioNorm.includes("dakatattoo") || negocioNorm.includes("daka")) {
+      document.getElementById("nombreEmisor").innerText = "Dakatattoo";
+      document.getElementById("emisorNombre").innerHTML = "<strong>Danielka García Guido</strong>";
+      document.getElementById("emisorDni").innerText = "Y0743218x";
+      document.getElementById("emisorDireccion").innerText = "Av. Madrid 33, local izq";
+      document.getElementById("emisorCiudad").innerText = "Zaragoza, 50004";
+      document.getElementById("emisorTelefono").innerText = "684053376";
+      document.getElementById("emisorEmail").innerText = "Dakaguido@gmail.com";
+    }
+  }
 
   if (!datosParam) {
     alert("No hay datos de factura para mostrar.");
@@ -13,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("numFactura").innerText = factura.numeroFactura || "";
     
+    // Formato de fecha DD/MM/YY
     if (factura.fecha) {
       const partes = factura.fecha.split("-");
       if (partes.length === 3) {
@@ -22,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // GESTIÓN DEL RECEPTOR Y TÍTULO
+    // GESTIÓN DEL RECEPTOR Y TÍTULO DE LA FACTURA
     const bloqueReceptor = document.getElementById("bloqueReceptor");
     const tipoFactura = document.getElementById("tipoFactura");
 
@@ -41,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
       bloqueReceptor.style.display = "none";
     }
 
-    // TABLA Y TOTALES
+    // TABLA DE CONCEPTOS Y TOTAL
     const tabla = document.getElementById("tablaConceptos");
     tabla.innerHTML = "";
     let totalAcumulado = 0;
@@ -69,9 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // BOTÓN NUEVA FACTURA
     document.getElementById("btnNueva").addEventListener("click", () => {
-      const negocio = urlParams.get("emisorNegocio");
-      if (negocio) {
-        window.location.href = `index.html?emisorNegocio=${encodeURIComponent(negocio)}`;
+      if (emisorNegocio) {
+        window.location.href = `index.html?emisorNegocio=${encodeURIComponent(emisorNegocio)}`;
       } else {
         window.location.href = "index.html";
       }
