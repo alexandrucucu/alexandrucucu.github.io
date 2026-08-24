@@ -1,20 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const datosParam = urlParams.get("datos");
-  const emisorNegocio = urlParams.get("emisorNegocio");
-
-  if (emisorNegocio) {
-    const negocioNorm = emisorNegocio.toLowerCase();
-    if (negocioNorm.includes("dakatattoo") || negocioNorm.includes("daka")) {
-      document.getElementById("nombreEmisor").innerText = "Dakatattoo";
-      document.getElementById("emisorNombre").innerHTML = "<strong>Danielka García Guido</strong>";
-      document.getElementById("emisorDni").innerText = "Y0743218x";
-      document.getElementById("emisorDireccion").innerText = "Av. Madrid 33, local izq";
-      document.getElementById("emisorCiudad").innerText = "Zaragoza, 50004";
-      document.getElementById("emisorTelefono").innerText = "684053376";
-      document.getElementById("emisorEmail").innerText = "Dakaguido@gmail.com";
-    }
-  }
 
   if (!datosParam) {
     alert("No hay datos de factura para mostrar.");
@@ -25,6 +11,18 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     const factura = JSON.parse(datosParam);
 
+    // 1. DATOS DEL EMISOR (Leídos de la URL/JSON)
+    if (factura.emisor) {
+      document.getElementById("nombreEmisor").innerText = factura.emisor.empresa || "Empresa";
+      document.getElementById("emisorNombre").innerHTML = `<strong>${factura.emisor.nombre || ""}</strong>`;
+      document.getElementById("emisorDni").innerText = factura.emisor.dni || "";
+      document.getElementById("emisorDireccion").innerText = factura.emisor.direccion || "";
+      document.getElementById("emisorCiudad").innerText = factura.emisor.ciudad || "";
+      document.getElementById("emisorTelefono").innerText = factura.emisor.telefono || "";
+      document.getElementById("emisorEmail").innerText = factura.emisor.email || "";
+    }
+
+    // 2. DATOS GENERALES DE LA FACTURA
     document.getElementById("numFactura").innerText = factura.numeroFactura || "";
     
     if (factura.fecha) {
@@ -36,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // 3. DATOS DEL RECEPTOR Y TIPO DE FACTURA
     const bloqueReceptor = document.getElementById("bloqueReceptor");
     const tipoFactura = document.getElementById("tipoFactura");
     const desgloseOrdinaria = document.getElementById("desgloseOrdinaria");
@@ -62,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
       avisoIvaIncluido.style.display = "block";
     }
 
+    // 4. TABLA DE CONCEPTOS
     const tabla = document.getElementById("tablaConceptos");
     tabla.innerHTML = "";
     let sumaImportes = 0;
@@ -80,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tabla.appendChild(tr);
     });
 
+    // 5. CÁLCULO DE TOTALES
     if (esOrdinaria) {
       const pctIva = factura.porcentajeIva !== undefined ? factura.porcentajeIva : 21;
       const base = sumaImportes;
@@ -94,11 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("totalFactura").innerText = `${sumaImportes.toFixed(2)}€`;
     }
 
+    // BOTONES DE ACCIÓN
     document.getElementById("btnEditar").addEventListener("click", () => {
       window.location.href = `index.html?${urlParams.toString()}`;
     });
 
     document.getElementById("btnNueva").addEventListener("click", () => {
+      const emisorNegocio = urlParams.get("emisorNegocio");
       if (emisorNegocio) {
         window.location.href = `index.html?emisorNegocio=${encodeURIComponent(emisorNegocio)}`;
       } else {
