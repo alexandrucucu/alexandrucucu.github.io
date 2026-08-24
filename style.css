@@ -11,7 +11,7 @@ body {
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Courier New', Courier, monospace, Arial, sans-serif;
   background: #f3f3f3;
   padding: 5px;
   font-size: 14px;
@@ -23,18 +23,26 @@ body {
   background: white;
   padding: 12px;
   border-radius: 10px;
+  font-family: Arial, sans-serif;
 }
 
 h1 {
   text-align: center;
   margin: 4px 0 10px 0;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: normal;
 }
 
 h2 {
   text-align: center;
-  margin: 4px 0;
-  font-size: 18px;
+  margin: 4px 0 15px 0;
+  font-size: 20px;
+  font-weight: normal;
+}
+
+h3 {
+  margin: 10px 0 5px 0;
+  font-size: 16px;
 }
 
 .formulario {
@@ -50,12 +58,6 @@ select {
   width: 100%;
 }
 
-/* FILA DE CONCEPTOS EN 1 LÍNEA:
-   1. Descripción (1.2fr)
-   2. Cantidad / Input personalizado (55px)
-   3. Precio (0.8fr)
-   4. Botón X (32px)
-*/
 .concepto {
   display: grid;
   grid-template-columns: 1.2fr 55px 0.8fr 32px;
@@ -101,18 +103,13 @@ select {
   width: 100%;
 }
 
-.btnEliminar:hover {
-  background: #c0392b;
-}
-
-/* BOTONES GENERALES */
 button {
   padding: 8px;
   cursor: pointer;
   border: none;
   background: black;
   color: white;
-  font-size: 16px;
+  font-size: 15px;
   border-radius: 5px;
 }
 
@@ -120,110 +117,6 @@ button {
   margin-top: 8px;
   position: sticky;
   bottom: 10px;
-}
-
-hr {
-  margin: 8px 0;
-}
-
-/* MENSAJES DE ERROR */
-.alerta-error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-  padding: 10px 14px;
-  border-radius: 5px;
-  margin-bottom: 12px;
-  font-weight: bold;
-  text-align: center;
-}
-
-/* VISTA FACTURA / TICKET */
-.ticketBody {
-  background: white;
-}
-
-.ticket {
-  width: 360px;
-  margin: auto;
-  padding: 10px;
-  color: black;
-  box-sizing: border-box;
-}
-
-.ticket h1,
-.ticket h2 {
-  text-align: center;
-  margin: 5px 0;
-}
-
-.bloque {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.bloque p {
-  margin: 3px 0;
-}
-
-.tituloBloque {
-  background: #efefef;
-  display: inline-block;
-  padding: 5px 10px;
-  margin-bottom: 10px;
-}
-
-.datosFactura {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 30px 0;
-  font-size: 14px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  table-layout: fixed;
-}
-
-th {
-  border-bottom: 1px solid black;
-  padding-bottom: 5px;
-  font-size: 14px;
-  word-wrap: break-word;
-}
-
-td {
-  padding: 6px 2px;
-  text-align: center;
-  font-size: 14px;
-  word-wrap: break-word;
-}
-
-.total {
-  margin-top: 25px;
-  font-size: 18px;
-}
-
-.totalLinea {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.totalLinea h2 {
-  margin: 0;
-}
-
-/* BOTONES NAVEGACIÓN FACTURA */
-.acciones {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 30px;
-  flex-wrap: wrap;
 }
 
 .btnSecundario {
@@ -236,28 +129,141 @@ td {
   cursor: pointer;
 }
 
-.btnSecundario:hover {
-  background: #333333;
+hr {
+  margin: 8px 0;
+}
+
+.alerta-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 10px 14px;
+  border-radius: 5px;
+  margin-bottom: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* VISTA FACTURA / TICKET (ESTILO DE LA IMAGEN) */
+.ticketBody {
+  background: white;
+}
+
+.ticket {
+  width: 100%;
+  max-width: 550px;
+  margin: auto;
+  padding: 20px;
+  color: black;
+  box-sizing: border-box;
+}
+
+.bloque-personas {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.bloque-datos {
+  flex: 1;
+  text-align: center;
+}
+
+.bloque-datos p {
+  margin: 2px 0;
+  font-size: 13px;
+}
+
+.tituloBloque {
+  background: #a6a6a6;
+  color: black;
+  display: block;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.datosFactura {
+  margin: 25px 0;
+  font-size: 15px;
+  text-align: center;
+}
+
+.datosFactura p {
+  margin: 8px 0;
+}
+
+.etiquetaFondo {
+  background: #e6e6e6;
+  padding: 2px 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th {
+  background: #e6e6e6;
+  padding: 5px;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+td {
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.total {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.totalLineaH2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+}
+
+.totalLineaH2 span {
+  background: #e6e6e6;
+  padding: 3px 8px;
+}
+
+.totalLineaH2 h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
 }
 
 .btnPrint {
   background: #27ae60;
-  color: white;
-  font-weight: bold;
-}
-
-.btnPrint:hover {
-  background: #219150;
 }
 
 @page {
   size: auto;
-  margin: 8mm;
+  margin: 10mm;
 }
 
 @media print {
-  .acciones,
-  .acciones * {
+  .acciones {
     display: none !important;
   }
 
@@ -267,5 +273,7 @@ td {
 
   .ticket {
     width: 100%;
+    max-width: 100%;
+    padding: 0;
   }
 }
