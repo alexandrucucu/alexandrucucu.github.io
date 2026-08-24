@@ -110,7 +110,7 @@ function ocultarError() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const negocio = urlParams.get("emisorNegocio");
+  const negocio = urlParams.get("emisorEmpresa") || urlParams.get("emisorNegocio");
 
   if (negocio) {
     document.getElementById("tituloNegocio").innerText = `${negocio} - Nueva factura`;
@@ -230,6 +230,18 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     conceptos.push({ descripcion, cantidad, precio });
   }
 
+  // LECTURA DINÁMICA DE DATOS DEL EMISOR DESDE LA URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const emisor = {
+    empresa: urlParams.get("emisorEmpresa") || urlParams.get("emisorNegocio") || "",
+    nombre: urlParams.get("emisorNombre") || "",
+    dni: urlParams.get("emisorDni") || "",
+    direccion: urlParams.get("emisorDireccion") || "",
+    ciudad: urlParams.get("emisorCiudad") || "",
+    telefono: urlParams.get("emisorTelefono") || "",
+    email: urlParams.get("emisorEmail") || ""
+  };
+
   let receptor = null;
   let porcentajeIva = 21;
   const seccionReceptor = document.getElementById("seccionReceptor");
@@ -262,7 +274,8 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     fecha,
     conceptos,
     receptor,
-    porcentajeIva
+    porcentajeIva,
+    emisor
   };
 
   const targetParams = new URLSearchParams(window.location.search);
