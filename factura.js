@@ -11,16 +11,24 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     const factura = JSON.parse(datosParam);
 
-    // 1. DATOS DEL EMISOR (Leídos de la URL/JSON)
-    if (factura.emisor) {
-      document.getElementById("nombreEmisor").innerText = factura.emisor.empresa || "Empresa";
-      document.getElementById("emisorNombre").innerHTML = `<strong>${factura.emisor.nombre || ""}</strong>`;
-      document.getElementById("emisorDni").innerText = factura.emisor.dni || "";
-      document.getElementById("emisorDireccion").innerText = factura.emisor.direccion || "";
-      document.getElementById("emisorCiudad").innerText = factura.emisor.ciudad || "";
-      document.getElementById("emisorTelefono").innerText = factura.emisor.telefono || "";
-      document.getElementById("emisorEmail").innerText = factura.emisor.email || "";
-    }
+    // 1. DATOS DEL EMISOR MAPPING CON TUS PARÁMETROS EXACTOS
+    const emisor = factura.emisor || {};
+    const negocio = emisor.negocio || urlParams.get("emisorNegocio") || "";
+    const nombre = emisor.nombre || urlParams.get("emisorNombre") || "";
+    const dni = emisor.dni || urlParams.get("emisorDni") || "";
+    const dir = emisor.dir || urlParams.get("emisorDir") || "";
+    const poblacion = emisor.poblacion || urlParams.get("emisorPoblacion") || "";
+    const tel = emisor.tel || urlParams.get("emisorTel") || "";
+    const email = emisor.email || urlParams.get("emisorEmail") || "";
+
+    // Insertar en la vista HTML
+    document.getElementById("nombreEmisor").innerText = negocio;
+    document.getElementById("emisorNombre").innerHTML = nombre ? `<strong>${nombre}</strong>` : "";
+    document.getElementById("emisorDni").innerText = dni;
+    document.getElementById("emisorDireccion").innerText = dir;
+    document.getElementById("emisorCiudad").innerText = poblacion;
+    document.getElementById("emisorTelefono").innerText = tel;
+    document.getElementById("emisorEmail").innerText = email;
 
     // 2. DATOS GENERALES DE LA FACTURA
     document.getElementById("numFactura").innerText = factura.numeroFactura || "";
@@ -80,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tabla.appendChild(tr);
     });
 
-    // 5. CÁLCULO DE TOTALES
+    // 5. TOTALES E IVA
     if (esOrdinaria) {
       const pctIva = factura.porcentajeIva !== undefined ? factura.porcentajeIva : 21;
       const base = sumaImportes;
@@ -95,18 +103,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("totalFactura").innerText = `${sumaImportes.toFixed(2)}€`;
     }
 
-    // BOTONES DE ACCIÓN
+    // BOTONES DE NAVEGACIÓN
     document.getElementById("btnEditar").addEventListener("click", () => {
       window.location.href = `index.html?${urlParams.toString()}`;
     });
 
     document.getElementById("btnNueva").addEventListener("click", () => {
-      const emisorNegocio = urlParams.get("emisorNegocio");
-      if (emisorNegocio) {
-        window.location.href = `index.html?emisorNegocio=${encodeURIComponent(emisorNegocio)}`;
-      } else {
-        window.location.href = "index.html";
-      }
+      // Mantiene intacta la URL original con los parámetros del emisor
+      const paramsOriginales = new URLSearchParams(window.location.search);
+      paramsOriginales.delete("datos");
+      window.location.href = `index.html?${paramsOriginales.toString()}`;
     });
 
   } catch (e) {
