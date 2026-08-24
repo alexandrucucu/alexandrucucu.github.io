@@ -68,7 +68,6 @@ function crearConcepto(datos = null) {
     otroDescInput.style.display = selectDesc.value === "Otro" ? "block" : "none";
   });
 
-  // Oculta el selector e inserta el input numérico en la misma posición de la fila
   selectCant.addEventListener("change", () => {
     if (selectCant.value === "Otro") {
       selectCant.style.display = "none";
@@ -120,6 +119,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const contenedorConceptos = document.getElementById("conceptosContainer");
   contenedorConceptos.innerHTML = "";
 
+  // TOGGLE DATOS RECEPTOR
+  const btnToggleReceptor = document.getElementById("btnToggleReceptor");
+  const seccionReceptor = document.getElementById("seccionReceptor");
+
+  btnToggleReceptor.addEventListener("click", () => {
+    if (seccionReceptor.style.display === "none") {
+      seccionReceptor.style.display = "block";
+      btnToggleReceptor.innerText = "- Quitar datos cliente (Receptor)";
+    } else {
+      seccionReceptor.style.display = "none";
+      btnToggleReceptor.innerText = "+ Añadir datos cliente (Receptor)";
+    }
+  });
+
   const datosGuardados = urlParams.get("datos");
 
   if (datosGuardados) {
@@ -127,6 +140,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const factura = JSON.parse(datosGuardados);
       document.getElementById("numeroFactura").value = factura.numeroFactura || "";
       document.getElementById("fecha").value = factura.fecha || "";
+
+      // Cargar datos receptor si existen
+      if (factura.receptor) {
+        seccionReceptor.style.display = "block";
+        btnToggleReceptor.innerText = "- Quitar datos cliente (Receptor)";
+        document.getElementById("receptorNombre").value = factura.receptor.nombre || "";
+        document.getElementById("receptorDni").value = factura.receptor.dni || "";
+        document.getElementById("receptorDireccion").value = factura.receptor.direccion || "";
+        document.getElementById("receptorCiudad").value = factura.receptor.ciudad || "";
+        document.getElementById("receptorTelefono").value = factura.receptor.telefono || "";
+        document.getElementById("receptorEmail").value = factura.receptor.email || "";
+      }
 
       if (factura.conceptos && factura.conceptos.length > 0) {
         factura.conceptos.forEach(conceptoData => {
@@ -210,15 +235,30 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     });
   }
 
-  if (conceptos.length === 0) {
-    mostrarError("Debes incluir al menos un concepto en la factura.");
-    return;
+  // RECOGER DATOS DEL RECEPTOR
+  let receptor = null;
+  const seccionReceptor = document.getElementById("seccionReceptor");
+  if (seccionReceptor.style.display !== "none") {
+    const nombre = document.getElementById("receptorNombre").value.trim();
+    const dni = document.getElementById("receptorDni").value.trim();
+    const direccion = document.getElementById("receptorDireccion").value.trim();
+    const ciudad = document.getElementById("receptorCiudad").value.trim();
+    const telefono = document.getElementById("receptorTelefono").value.trim();
+    const email = document.getElementById("receptorEmail").value.trim();
+
+    if (!nombre || !dni) {
+      mostrarError("Debes completar al menos el nombre y NIF/DNI del receptor.");
+      return;
+    }
+
+    receptor = { nombre, dni, direccion, ciudad, telefono, email };
   }
 
   const factura = {
     numeroFactura,
     fecha,
-    conceptos
+    conceptos,
+    receptor
   };
 
   const targetParams = new URLSearchParams(window.location.search);
