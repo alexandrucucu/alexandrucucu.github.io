@@ -235,7 +235,7 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     });
   }
 
-  // RECOGER DATOS DEL RECEPTOR
+  // RECOGER Y VALIDAR DATOS DEL RECEPTOR
   let receptor = null;
   const seccionReceptor = document.getElementById("seccionReceptor");
   if (seccionReceptor.style.display !== "none") {
@@ -246,8 +246,9 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     const telefono = document.getElementById("receptorTelefono").value.trim();
     const email = document.getElementById("receptorEmail").value.trim();
 
-    if (!nombre || !dni) {
-      mostrarError("Debes completar al menos el nombre y NIF/DNI del receptor.");
+    // VALIDACIÓN: Nombre, DNI y Dirección son obligatorios
+    if (!nombre || !dni || !direccion) {
+      mostrarError("Para facturas ordinarias debes indicar Nombre, NIF/DNI y Dirección del receptor.");
       return;
     }
 
