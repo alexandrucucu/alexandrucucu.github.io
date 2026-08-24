@@ -11,9 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     const factura = JSON.parse(datosParam);
 
-    // 1. DATOS DEL EMISOR MAPPING CON TUS PARÁMETROS EXACTOS
+    // 1. DATOS DEL EMISOR (Prioridad a los parámetros exactos de tu URL)
     const emisor = factura.emisor || {};
-    const negocio = emisor.negocio || urlParams.get("emisorNegocio") || "";
+
+    const negocio = emisor.negocio 
+                    || urlParams.get("emisorNegocio") 
+                    || urlParams.get("emisorEmpresa") 
+                    || "";
+
     const nombre = emisor.nombre || urlParams.get("emisorNombre") || "";
     const dni = emisor.dni || urlParams.get("emisorDni") || "";
     const dir = emisor.dir || urlParams.get("emisorDir") || "";
@@ -21,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tel = emisor.tel || urlParams.get("emisorTel") || "";
     const email = emisor.email || urlParams.get("emisorEmail") || "";
 
-    // Insertar en la vista HTML
+    // Actualizar elementos del emisor en el DOM
     document.getElementById("nombreEmisor").innerText = negocio;
     document.getElementById("emisorNombre").innerHTML = nombre ? `<strong>${nombre}</strong>` : "";
     document.getElementById("emisorDni").innerText = dni;
@@ -88,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tabla.appendChild(tr);
     });
 
-    // 5. TOTALES E IVA
+    // 5. CÁLCULO DE TOTALES
     if (esOrdinaria) {
       const pctIva = factura.porcentajeIva !== undefined ? factura.porcentajeIva : 21;
       const base = sumaImportes;
@@ -109,7 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btnNueva").addEventListener("click", () => {
-      // Mantiene intacta la URL original con los parámetros del emisor
       const paramsOriginales = new URLSearchParams(window.location.search);
       paramsOriginales.delete("datos");
       window.location.href = `index.html?${paramsOriginales.toString()}`;
