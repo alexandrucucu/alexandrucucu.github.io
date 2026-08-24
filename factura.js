@@ -3,10 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const datosParam = urlParams.get("datos");
   const emisorNegocio = urlParams.get("emisorNegocio");
 
-  // CONFIGURACIÓN DE DATOS DEL EMISOR SEGÚN LA URL
   if (emisorNegocio) {
     const negocioNorm = emisorNegocio.toLowerCase();
-
     if (negocioNorm.includes("dakatattoo") || negocioNorm.includes("daka")) {
       document.getElementById("nombreEmisor").innerText = "Dakatattoo";
       document.getElementById("emisorNombre").innerHTML = "<strong>Danielka García Guido</strong>";
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("numFactura").innerText = factura.numeroFactura || "";
     
-    // Formato de fecha DD/MM/YY
     if (factura.fecha) {
       const partes = factura.fecha.split("-");
       if (partes.length === 3) {
@@ -39,13 +36,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // GESTIÓN DEL RECEPTOR Y TÍTULO DE LA FACTURA
     const bloqueReceptor = document.getElementById("bloqueReceptor");
     const tipoFactura = document.getElementById("tipoFactura");
+    const desgloseOrdinaria = document.getElementById("desgloseOrdinaria");
+    const avisoIvaIncluido = document.getElementById("avisoIvaIncluido");
 
-    if (factura.receptor && factura.receptor.nombre) {
+    const esOrdinaria = factura.receptor && factura.receptor.nombre;
+
+    if (esOrdinaria) {
       tipoFactura.innerText = "Factura ordinaria";
       bloqueReceptor.style.display = "block";
+      desgloseOrdinaria.style.display = "block";
+      avisoIvaIncluido.style.display = "none";
 
       document.getElementById("receptorNombre").innerText = factura.receptor.nombre;
       document.getElementById("receptorDni").innerText = factura.receptor.dni || "";
@@ -56,16 +58,17 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       tipoFactura.innerText = "Factura simplificada";
       bloqueReceptor.style.display = "none";
+      desgloseOrdinaria.style.display = "none";
+      avisoIvaIncluido.style.display = "block";
     }
 
-    // TABLA DE CONCEPTOS Y TOTAL
     const tabla = document.getElementById("tablaConceptos");
     tabla.innerHTML = "";
-    let totalAcumulado = 0;
+    let sumaImportes = 0;
 
     factura.conceptos.forEach(c => {
       const importe = c.cantidad * c.precio;
-      totalAcumulado += importe;
+      sumaImportes += importe;
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -77,14 +80,24 @@ document.addEventListener("DOMContentLoaded", () => {
       tabla.appendChild(tr);
     });
 
-    document.getElementById("totalFactura").innerText = `${totalAcumulado.toFixed(2)}€`;
+    if (esOrdinaria) {
+      const pctIva = factura.porcentajeIva !== undefined ? factura.porcentajeIva : 21;
+      const base = sumaImportes;
+      const cuota = base * (pctIva / 100);
+      const total = base + cuota;
 
-    // BOTÓN MODIFICAR / EDITAR
+      document.getElementById("lblIva").innerText = pctIva;
+      document.getElementById("baseImponible").innerText = `${base.toFixed(2)}€`;
+      document.getElementById("cuotaIva").innerText = `${cuota.toFixed(2)}€`;
+      document.getElementById("totalFactura").innerText = `${total.toFixed(2)}€`;
+    } else {
+      document.getElementById("totalFactura").innerText = `${sumaImportes.toFixed(2)}€`;
+    }
+
     document.getElementById("btnEditar").addEventListener("click", () => {
       window.location.href = `index.html?${urlParams.toString()}`;
     });
 
-    // BOTÓN NUEVA FACTURA
     document.getElementById("btnNueva").addEventListener("click", () => {
       if (emisorNegocio) {
         window.location.href = `index.html?emisorNegocio=${encodeURIComponent(emisorNegocio)}`;
