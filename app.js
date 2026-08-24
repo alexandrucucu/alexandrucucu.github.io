@@ -119,7 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const contenedorConceptos = document.getElementById("conceptosContainer");
   contenedorConceptos.innerHTML = "";
 
-  // TOGGLE DATOS RECEPTOR
   const btnToggleReceptor = document.getElementById("btnToggleReceptor");
   const seccionReceptor = document.getElementById("seccionReceptor");
 
@@ -141,10 +140,10 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("numeroFactura").value = factura.numeroFactura || "";
       document.getElementById("fecha").value = factura.fecha || "";
 
-      // Cargar datos receptor si existen
       if (factura.receptor) {
         seccionReceptor.style.display = "block";
         btnToggleReceptor.innerText = "- Quitar datos cliente (Receptor)";
+        document.getElementById("porcentajeIva").value = factura.porcentajeIva !== undefined ? factura.porcentajeIva : 21;
         document.getElementById("receptorNombre").value = factura.receptor.nombre || "";
         document.getElementById("receptorDni").value = factura.receptor.dni || "";
         document.getElementById("receptorDireccion").value = factura.receptor.direccion || "";
@@ -228,17 +227,21 @@ document.getElementById("generarFactura").addEventListener("click", () => {
       return;
     }
 
-    conceptos.push({
-      descripcion,
-      cantidad,
-      precio
-    });
+    conceptos.push({ descripcion, cantidad, precio });
   }
 
-  // RECOGER Y VALIDAR DATOS DEL RECEPTOR
   let receptor = null;
+  let porcentajeIva = 21;
   const seccionReceptor = document.getElementById("seccionReceptor");
+  
   if (seccionReceptor.style.display !== "none") {
+    const valIva = parseFloat(document.getElementById("porcentajeIva").value);
+    if (isNaN(valIva) || valIva < 0) {
+      mostrarError("Debes indicar un porcentaje de IVA válido.");
+      return;
+    }
+    porcentajeIva = valIva;
+
     const nombre = document.getElementById("receptorNombre").value.trim();
     const dni = document.getElementById("receptorDni").value.trim();
     const direccion = document.getElementById("receptorDireccion").value.trim();
@@ -246,9 +249,8 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     const telefono = document.getElementById("receptorTelefono").value.trim();
     const email = document.getElementById("receptorEmail").value.trim();
 
-    // VALIDACIÓN: Nombre, DNI y Dirección son obligatorios
-    if (!nombre || !dni || !direccion) {
-      mostrarError("Para facturas ordinarias debes indicar Nombre, NIF/DNI y Dirección del receptor.");
+    if (!nombre || !dni || !direccion || !ciudad) {
+      mostrarError("Para facturas ordinarias debes indicar Nombre, NIF/DNI, Dirección y Ciudad/CP.");
       return;
     }
 
@@ -259,7 +261,8 @@ document.getElementById("generarFactura").addEventListener("click", () => {
     numeroFactura,
     fecha,
     conceptos,
-    receptor
+    receptor,
+    porcentajeIva
   };
 
   const targetParams = new URLSearchParams(window.location.search);
