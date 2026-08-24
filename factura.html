@@ -11,7 +11,6 @@
     <h1 id="tipoFactura">Factura simplificada</h1>
     <h2 id="nombreEmisor">Empresa Ejemplo</h2>
 
-    <!-- BLOQUE DE DATOS (EMISOR Y RECEPTOR) -->
     <div id="bloquePersonas" class="bloque-personas">
       <div class="bloque-datos">
         <span class="tituloBloque">DATOS DEL EMISOR</span>
@@ -52,10 +51,15 @@
     </table>
 
     <div class="total">
+      <div id="desgloseOrdinaria" style="display: none;">
+        <p style="margin: 3px 0;">Base Imponible: <strong id="baseImponible">0.00€</strong></p>
+        <p style="margin: 3px 0;">IVA (<span id="lblIva">21</span>%): <strong id="cuotaIva">0.00€</strong></p>
+      </div>
       <div class="totalLineaH2">
         <span>Total factura:</span>
         <h2 id="totalFactura">0€</h2>
       </div>
+      <p id="avisoIvaIncluido" style="margin-top: 5px; font-weight: bold; display: none;">IVA INCLUIDO</p>
     </div>
 
     <div class="acciones">
