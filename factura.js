@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const numFactura = factura.numeroFactura || "";
     if (elNum) elNum.innerText = numFactura;
     
-    // CAMBIO CLAVE: Cambia el título de la página para concatenar el número de factura al guardar el PDF
+    // Cambia el título de la página para concatenar el número de factura al guardar el PDF
     if (numFactura) {
       document.title = `Factura_${numFactura}`;
     } else {
@@ -78,10 +78,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (desgloseOrdinaria) desgloseOrdinaria.style.display = "block";
       if (avisoIvaIncluido) avisoIvaIncluido.style.display = "none";
 
-      document.getElementById("receptorNombre").innerText = factura.receptor.nombre;
-      document.getElementById("receptorDni").innerText = factura.receptor.dni || "";
-      document.getElementById("receptorDireccion").innerText = factura.receptor.direccion || "";
-      document.getElementById("receptorCiudad").innerText = factura.receptor.ciudad || "";
+      // Renderizar nombre del receptor en negrita (idéntico al emisor)
+      const elReceptorNombre = document.getElementById("receptorNombre");
+      if (elReceptorNombre) {
+        elReceptorNombre.innerHTML = factura.receptor.nombre ? `<strong>${factura.receptor.nombre}</strong>` : "";
+      }
+
+      if (document.getElementById("receptorDni")) document.getElementById("receptorDni").innerText = factura.receptor.dni || "";
+      if (document.getElementById("receptorDireccion")) document.getElementById("receptorDireccion").innerText = factura.receptor.direccion || "";
+      if (document.getElementById("receptorCiudad")) document.getElementById("receptorCiudad").innerText = factura.receptor.ciudad || "";
       if (document.getElementById("receptorTelefono")) document.getElementById("receptorTelefono").innerText = factura.receptor.telefono || "";
       if (document.getElementById("receptorEmail")) document.getElementById("receptorEmail").innerText = factura.receptor.email || "";
     } else {
