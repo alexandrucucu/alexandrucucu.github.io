@@ -1,3 +1,7 @@
+/* ==========================================
+   STYLE.CSS - Hoja de Estilos del Generador
+   ========================================== */
+
 * {
   box-sizing: border-box;
   -webkit-print-color-adjust: exact;
@@ -17,6 +21,7 @@ body {
   font-size: 14px;
 }
 
+/* Formulario Principal (Index) */
 .container {
   max-width: 650px;
   margin: auto;
@@ -58,6 +63,7 @@ select {
   width: 100%;
 }
 
+/* Grilla responsive de conceptos */
 .concepto {
   display: grid;
   grid-template-columns: 1.2fr 55px 0.8fr 32px;
@@ -144,7 +150,128 @@ hr {
   text-align: center;
 }
 
-/* VISTA FACTURA / TICKET (ESTILO DE LA IMAGEN) */
+/* Bloque compacto de IVA */
+.bloque-iva {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9f9f9;
+  padding: 8px 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  margin: 4px 0;
+}
+
+.bloque-iva input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+  margin: 0;
+}
+
+.bloque-iva label {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.bloque-iva input[type="number"] {
+  width: 55px !important;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.bloque-iva span {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+/* Modal Emergente y Botón Mini Calculadora */
+.btnCalcMini {
+  background: #34495e;
+  color: white;
+  border: none;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnCalcMini:hover {
+  background: #2c3e50;
+}
+
+.modal-calc {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal-calc-content {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  margin-bottom: 20px; /* Margen para facilitar interacción sobre teclado táctil */
+}
+
+.modal-calc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modal-calc-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.btn-cerrar-modal {
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #888;
+}
+
+.btn-cerrar-modal:hover {
+  color: #000;
+}
+
+.calc-resultados {
+  background: #f8f9fa;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.calc-fila {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.calc-total {
+  border-top: 1px solid #ccc;
+  padding-top: 5px;
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+/* Maquetación del Ticket impreso / PDF */
 .ticketBody {
   background: white;
 }
@@ -262,7 +389,7 @@ td {
   margin: 10mm;
 }
 
-/* ADAPTACIÓN PANTALLA MÓVIL (Evita apretujones) */
+/* Adaptabilidad para teléfonos móviles */
 @media screen and (max-width: 480px) {
   .bloque-personas {
     flex-direction: column;
@@ -270,7 +397,7 @@ td {
   }
 }
 
-/* AJUSTES PARA IMPRESIÓN / PDF (Fuerza disposición lado a lado) */
+/* Reglas CSS para Impresión a PDF */
 @media print {
   .acciones {
     display: none !important;
