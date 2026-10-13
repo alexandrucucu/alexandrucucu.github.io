@@ -8,9 +8,11 @@
 </head>
 <body class="ticketBody">
   <div class="ticket">
+    <!-- Encabezado del ticket / factura -->
     <h1 id="tipoFactura">Factura simplificada</h1>
     <h2 id="nombreEmisor"></h2>
 
+    <!-- Bloque de Emisor y Receptor (en paralelo en pantalla/impresión) -->
     <div id="bloquePersonas" class="bloque-personas">
       <div class="bloque-datos">
         <span class="tituloBloque">DATOS DEL EMISOR</span>
@@ -33,11 +35,13 @@
       </div>
     </div>
 
+    <!-- Metadatos de Factura -->
     <div class="datosFactura">
       <p><span class="etiquetaFondo">Número de factura:</span> <strong id="numFactura">-</strong></p>
       <p><span class="etiquetaFondo">Fecha:</span> <strong id="fechaFactura">-</strong></p>
     </div>
 
+    <!-- Tabla detallada de items -->
     <table>
       <thead>
         <tr>
@@ -50,6 +54,7 @@
       <tbody id="tablaConceptos"></tbody>
     </table>
 
+    <!-- Totales y desglose impositivo -->
     <div class="total">
       <div id="desgloseOrdinaria" style="display: none;">
         <p style="margin: 3px 0;">Base Imponible: <strong id="baseImponible">0.00€</strong></p>
@@ -62,6 +67,7 @@
       <p id="avisoIvaIncluido" style="margin-top: 5px; font-weight: bold; display: none;">IVA INCLUIDO</p>
     </div>
 
+    <!-- Barra de acciones de impresión (Oculta al imprimir a PDF) -->
     <div class="acciones">
       <button type="button" class="btnSecundario" id="btnEditar">Modificar</button>
       <button type="button" class="btnSecundario" id="btnNueva">Nueva Factura</button>
