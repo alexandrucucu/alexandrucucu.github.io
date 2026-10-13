@@ -1,3 +1,7 @@
+/**
+ * FACTURA.JS - Renderizado de la plantilla impresa/ticket de factura
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const datosParam = urlParams.get("datos");
@@ -11,8 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     const factura = JSON.parse(datosParam);
 
-    // 1. DATOS DEL EMISOR (Mapeo directo de tu URL)
+    // 1. RENDERIZAR DATOS DEL EMISOR (Prioriza JSON interno, fallback a parámetros URL)
     const emisor = factura.emisor || {};
+    
     const negocio = emisor.negocio || urlParams.get("emisorNegocio") || "";
     const nombre = emisor.nombre || urlParams.get("emisorNombre") || "";
     const dni = emisor.dni || urlParams.get("emisorDni") || "";
@@ -21,8 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const tel = emisor.tel || urlParams.get("emisorTel") || "";
     const email = emisor.email || urlParams.get("emisorEmail") || "";
 
-    // Renderizar datos del emisor
-    document.getElementById("nombreEmisor").innerText = negocio;
+    const elNegocio = document.getElementById("nombreEmisor");
+    if (elNegocio) elNegocio.innerText = negocio;
     
     const elNombre = document.getElementById("emisorNombre");
     if (elNombre) elNombre.innerHTML = nombre ? `<strong>${nombre}</strong>` : "";
@@ -42,43 +47,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const elEmail = document.getElementById("emisorEmail");
     if (elEmail) elEmail.innerText = email;
 
-    // 2. DATOS GENERALES Y NOMBRE DEL ARCHIVO PDF
+    // 2. METADATOS Y TÍTULO DINÁMICO DE PÁGINA (Afecta al nombre predeterminado del PDF)
     const elNum = document.getElementById("numFactura");
     const numFactura = factura.numeroFactura || "";
     if (elNum) elNum.innerText = numFactura;
     
-    // Cambia el título de la página para concatenar el número de factura al guardar el PDF
-    if (numFactura) {
-      document.title = `Factura_${numFactura}`;
-    } else {
-      document.title = "Factura";
-    }
+    document.title = numFactura ? `Factura_${numFactura}` : "Factura";
 
     const elFecha = document.getElementById("fechaFactura");
     if (elFecha && factura.fecha) {
       const partes = factura.fecha.split("-");
-      if (partes.length === 3) {
-        elFecha.innerText = `${partes[2]}-${partes[1]}-${partes[0]}`;
-      } else {
-        elFecha.innerText = factura.fecha;
-      }
+      elFecha.innerText = partes.length === 3 ? `${partes[2]}-${partes[1]}-${partes[0]}` : factura.fecha;
     }
 
-    // 3. RECEPTOR Y TIPO DE FACTURA
+    // 3. DATOS DEL RECEPTOR Y CLASIFICACIÓN LEGAL
     const bloqueReceptor = document.getElementById("bloqueReceptor");
     const tipoFactura = document.getElementById("tipoFactura");
     const desgloseOrdinaria = document.getElementById("desgloseOrdinaria");
     const avisoIvaIncluido = document.getElementById("avisoIvaIncluido");
 
-    const esOrdinaria = factura.receptor && factura.receptor.nombre;
+    const esOrdinaria = Boolean(factura.receptor && factura.receptor.nombre);
 
     if (esOrdinaria) {
       if (tipoFactura) tipoFactura.innerText = "Factura ordinaria";
       if (bloqueReceptor) bloqueReceptor.style.display = "block";
-      if (desgloseOrdinaria) desgloseOrdinaria.style.display = "block";
-      if (avisoIvaIncluido) avisoIvaIncluido.style.display = "none";
 
-      // Renderizar nombre del receptor en negrita (idéntico al emisor)
       const elReceptorNombre = document.getElementById("receptorNombre");
       if (elReceptorNombre) {
         elReceptorNombre.innerHTML = factura.receptor.nombre ? `<strong>${factura.receptor.nombre}</strong>` : "";
@@ -92,8 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       if (tipoFactura) tipoFactura.innerText = "Factura simplificada";
       if (bloqueReceptor) bloqueReceptor.style.display = "none";
-      if (desgloseOrdinaria) desgloseOrdinaria.style.display = "none";
-      if (avisoIvaIncluido) avisoIvaIncluido.style.display = "block";
     }
 
     // 4. TABLA DE CONCEPTOS
@@ -116,23 +107,31 @@ document.addEventListener("DOMContentLoaded", () => {
         tabla.appendChild(tr);
       });
 
-      // 5. TOTALES E IVA
-      if (esOrdinaria) {
+      // 5. CÁLCULOS TRIBUTARIOS
+      // Aplica el desglose si se indicó expresamente el check o si se trata de una Factura Ordinaria
+      const debeDesglosar = factura.desglosarIva || esOrdinaria;
+
+      if (debeDesglosar) {
+        if (desgloseOrdinaria) desgloseOrdinaria.style.display = "block";
+        if (avisoIvaIncluido) avisoIvaIncluido.style.display = "none";
+
         const pctIva = factura.porcentajeIva !== undefined ? factura.porcentajeIva : 21;
-        const base = sumaImportes;
-        const cuota = base * (pctIva / 100);
-        const total = base + cuota;
+        const total = sumaImportes;
+        const base = total / (1 + (pctIva / 100));
+        const cuota = total - base;
 
         if (document.getElementById("lblIva")) document.getElementById("lblIva").innerText = pctIva;
         if (document.getElementById("baseImponible")) document.getElementById("baseImponible").innerText = `${base.toFixed(2)}€`;
         if (document.getElementById("cuotaIva")) document.getElementById("cuotaIva").innerText = `${cuota.toFixed(2)}€`;
         if (document.getElementById("totalFactura")) document.getElementById("totalFactura").innerText = `${total.toFixed(2)}€`;
       } else {
+        if (desgloseOrdinaria) desgloseOrdinaria.style.display = "none";
+        if (avisoIvaIncluido) avisoIvaIncluido.style.display = "block";
         if (document.getElementById("totalFactura")) document.getElementById("totalFactura").innerText = `${sumaImportes.toFixed(2)}€`;
       }
     }
 
-    // BOTONES
+    // NAVEGACIÓN Y EDICIÓN
     const btnEditar = document.getElementById("btnEditar");
     if (btnEditar) {
       btnEditar.addEventListener("click", () => {
@@ -150,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
   } catch (e) {
-    console.error("Error al procesar la factura:", e);
+    console.error("Error al procesar el JSON de la factura:", e);
     alert("Error al cargar la factura.");
   }
 });
