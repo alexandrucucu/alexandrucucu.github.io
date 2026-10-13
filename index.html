@@ -8,11 +8,17 @@
 </head>
 <body>
   <div class="container">
-    <h1 id="tituloNegocio">Nueva Factura</h1>
+    <!-- Encabezado con título dinámico y botón de utilidad -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <h1 id="tituloNegocio" style="margin: 0;">Nueva Factura</h1>
+      <button type="button" id="btnAbrirCalc" class="btnCalcMini" title="Calculadora rápida de IVA">🔍 Calc. IVA</button>
+    </div>
     
+    <!-- Bloque de alertas para validaciones de formulario -->
     <div id="mensajeError" class="alerta-error" style="display: none;"></div>
 
     <div class="formulario">
+      <!-- Datos básicos de la factura -->
       <label for="numeroFactura">Número factura</label>
       <input type="text" id="numeroFactura" placeholder="Ej: 0001">
 
@@ -22,20 +28,28 @@
 
       <hr>
 
+      <!-- Configuración de desglose e impuestos (Layout compacto horizontal) -->
+      <div class="bloque-iva">
+        <input type="checkbox" id="chkDesglosarIva">
+        <label for="chkDesglosarIva">Desglosar IVA:</label>
+        <input type="number" id="porcentajeIva" value="21" min="0" max="100" step="1">
+        <span>%</span>
+      </div>
+
+      <hr>
+
+      <!-- Listado dinámico de conceptos/servicios -->
       <h2>Conceptos</h2>
       <div id="conceptosContainer"></div>
       <button type="button" id="agregarConcepto">+ Añadir concepto</button>
 
       <hr>
 
-      <!-- BOTÓN Y SECCIÓN PARA DATOS DEL RECEPTOR -->
+      <!-- Sección condicional para Factura Ordinaria (Receptor / Cliente) -->
       <button type="button" id="btnToggleReceptor" class="btnSecundario">+ Añadir datos cliente (Receptor)</button>
       
       <div id="seccionReceptor" style="display: none; margin-top: 10px;">
         <h3>Datos del Receptor</h3>
-        
-        <label for="porcentajeIva">Tipo de IVA (%) *</label>
-        <input type="number" id="porcentajeIva" value="21" min="0" step="1" placeholder="21">
 
         <label for="receptorNombre">Nombre completo *</label>
         <input type="text" id="receptorNombre" placeholder="Ej: Juan Pérez Gómez">
@@ -59,6 +73,34 @@
       <hr>
 
       <button type="button" id="generarFactura" class="btnPrincipal">Generar factura</button>
+    </div>
+  </div>
+
+  <!-- Modal Flotante: Calculadora independiente de IVA -->
+  <div id="modalCalc" class="modal-calc" style="display: none;">
+    <div class="modal-calc-content">
+      <div class="modal-calc-header">
+        <h3>Calculadora de IVA rápida</h3>
+        <span id="btnCerrarCalc" class="btn-cerrar-modal">&times;</span>
+      </div>
+      <p style="font-size: 12px; color: #666; margin-top: 0;">Introduce el precio total (IVA incluido) para calcular la base:</p>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+        <div style="flex: 2;">
+          <label for="calcPrecioTotal" style="font-size: 12px; font-weight: bold;">Precio Total (€)</label>
+          <input type="number" id="calcPrecioTotal" placeholder="Ej: 50" min="0" step="0.01">
+        </div>
+        <div style="flex: 1;">
+          <label for="calcPctIva" style="font-size: 12px; font-weight: bold;">% IVA</label>
+          <input type="number" id="calcPctIva" value="21" min="0" step="1">
+        </div>
+      </div>
+
+      <div class="calc-resultados">
+        <div class="calc-fila"><span>Base Imponible:</span> <strong id="calcBase">0.00 €</strong></div>
+        <div class="calc-fila"><span>Cuota IVA:</span> <strong id="calcCuota">0.00 €</strong></div>
+        <div class="calc-fila calc-total"><span>Total final:</span> <strong id="calcTotal">0.00 €</strong></div>
+      </div>
     </div>
   </div>
 
