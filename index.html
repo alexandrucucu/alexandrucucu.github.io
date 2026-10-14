@@ -8,14 +8,33 @@
 </head>
 <body>
   <div class="container">
-    <!-- Encabezado con título dinámico y botón de utilidad -->
+    <!-- Encabezado con título dinámico y utilidades -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <h1 id="tituloNegocio" style="margin: 0;">Nueva Factura</h1>
-      <button type="button" id="btnAbrirCalc" class="btnCalcMini" title="Calculadora rápida de IVA">🔍 Calc. IVA</button>
+      <div style="display: flex; gap: 5px;">
+        <button type="button" id="btnToggleCsv" class="btnCalcMini" style="background: #27ae60;" title="Importar desde línea CSV/Excel">📥 Pegar CSV</button>
+        <button type="button" id="btnAbrirCalc" class="btnCalcMini" title="Calculadora rápida de IVA">🔍 Calc. IVA</button>
+      </div>
     </div>
     
-    <!-- Bloque de alertas para validaciones de formulario -->
+    <!-- Bloque de alertas para validaciones -->
     <div id="mensajeError" class="alerta-error" style="display: none;"></div>
+
+    <!-- CAJA DESPLEGABLE PARA IMPORTAR LINEA O BLOQUE CSV -->
+    <div id="bloqueCsv" style="display: none; background: #eef9f1; border: 1px solid #27ae60; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
+      <label for="inputCsv" style="font-size: 12px; font-weight: bold; color: #27ae60; display: block; margin-bottom: 4px;">
+        Pegar CSV de Excel (Nº, Fecha, Concepto, Cantidad, Precio, [IVA%]):
+      </label>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <textarea id="inputCsv" rows="3" placeholder="Ejemplo:&#10;158, 16/10/2026, Piercing, 1, 25, 21&#10;158, 16/10/2026, Joyería, 1, 15, 21" style="font-size: 12px; width: 100%; font-family: monospace;"></textarea>
+        
+        <!-- OPCIONES CSV -->
+        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+          <button type="button" id="btnCargarCsv" style="background: #27ae60; font-size: 13px; padding: 6px 10px;">Rellenar Formulario</button>
+          <button type="button" id="btnDirectoCsv" style="background: #2980b9; font-size: 13px; padding: 6px 10px;">Ir Directo a Factura 🚀</button>
+        </div>
+      </div>
+    </div>
 
     <div class="formulario">
       <!-- Datos básicos de la factura -->
@@ -28,7 +47,7 @@
 
       <hr>
 
-      <!-- Configuración de desglose e impuestos (Layout compacto horizontal) -->
+      <!-- Configuración de desglose e impuestos -->
       <div class="bloque-iva">
         <input type="checkbox" id="chkDesglosarIva">
         <label for="chkDesglosarIva">Desglosar IVA:</label>
@@ -72,7 +91,11 @@
 
       <hr>
 
-      <button type="button" id="generarFactura" class="btnPrincipal">Generar factura</button>
+      <!-- Botones de acción principal -->
+      <div style="display: flex; gap: 8px;">
+        <button type="button" id="btnLimpiar" class="btnSecundario" style="flex: 1;" title="Vaciar campos del formulario sin borrar datos del emisor">Limpiar</button>
+        <button type="button" id="generarFactura" class="btnPrincipal" style="flex: 2; margin-top: 0;">Generar factura</button>
+      </div>
     </div>
   </div>
 
