@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     const factura = JSON.parse(datosParam);
 
-    // 1. RENDERIZAR DATOS DEL EMISOR (Prioriza JSON interno, fallback a parámetros URL)
+    // 1. RENDERIZAR DATOS DEL EMISOR
     const emisor = factura.emisor || {};
     
     const negocio = emisor.negocio || urlParams.get("emisorNegocio") || "";
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const elEmail = document.getElementById("emisorEmail");
     if (elEmail) elEmail.innerText = email;
 
-    // 2. METADATOS Y TÍTULO DINÁMICO DE PÁGINA (Afecta al nombre predeterminado del PDF)
+    // 2. METADATOS Y TÍTULO DINÁMICO DE PÁGINA
     const elNum = document.getElementById("numFactura");
     const numFactura = factura.numeroFactura || "";
     if (elNum) elNum.innerText = numFactura;
@@ -108,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // 5. CÁLCULOS TRIBUTARIOS
-      // Aplica el desglose si se indicó expresamente el check o si se trata de una Factura Ordinaria
       const debeDesglosar = factura.desglosarIva || esOrdinaria;
 
       if (debeDesglosar) {
