@@ -3,30 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Generador web de facturas simplificadas y ordinarias adaptado a flujos Excel/CSV">
   <title>Nueva Factura</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <!-- Encabezado con título dinámico y utilidades -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <h1 id="tituloNegocio" style="margin: 0;">Nueva Factura</h1>
       <div style="display: flex; gap: 5px;">
-        <button type="button" id="btnToggleCsv" class="btnCalcMini" style="background: #27ae60;" title="Importar desde línea CSV/Excel">📥 Pegar CSV</button>
+        <button type="button" id="btnToggleCsv" class="btnCalcMini" style="background: #27ae60;" title="Importar desde línea o bloque CSV de Excel">📥 Pegar CSV</button>
         <button type="button" id="btnAbrirCalc" class="btnCalcMini" title="Calculadora rápida de IVA">🔍 Calc. IVA</button>
       </div>
-    </div>
+    </header>
     
     <!-- Bloque de alertas para validaciones -->
-    <div id="mensajeError" class="alerta-error" style="display: none;"></div>
+    <div id="mensajeError" class="alerta-error" role="alert" style="display: none;"></div>
 
     <!-- CAJA DESPLEGABLE PARA IMPORTAR LINEA O BLOQUE CSV -->
-    <div id="bloqueCsv" style="display: none; background: #eef9f1; border: 1px solid #27ae60; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
+    <section id="bloqueCsv" style="display: none; background: #eef9f1; border: 1px solid #27ae60; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
       <label for="inputCsv" style="font-size: 12px; font-weight: bold; color: #27ae60; display: block; margin-bottom: 4px;">
         Pegar CSV de Excel (Nº, Fecha, Concepto, Cantidad, Precio, [IVA%]):
       </label>
       <div style="display: flex; flex-direction: column; gap: 6px;">
-        <textarea id="inputCsv" rows="3" placeholder="Ejemplo:&#10;158, 16/10/2026, Piercing, 1, 25, 21&#10;158, 16/10/2026, Joyería, 1, 15, 21" style="font-size: 12px; width: 100%; font-family: monospace;"></textarea>
+        <textarea id="inputCsv" rows="3" placeholder="Ejemplo:&#10;158, 16/10/2026, Piercing, 1, 25, 21&#10;158, 16/10/2026, Joyería, 1, 15, 21&#10;159, 17/10/2026, Tatuaje, 1, 80, 21" style="font-size: 12px; width: 100%; font-family: monospace;"></textarea>
         
         <!-- OPCIONES CSV -->
         <div style="display: flex; gap: 6px; justify-content: flex-end;">
@@ -34,12 +35,12 @@
           <button type="button" id="btnDirectoCsv" style="background: #2980b9; font-size: 13px; padding: 6px 10px;">Ir Directo a Factura 🚀</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="formulario">
+    <main class="formulario">
       <!-- Datos básicos de la factura -->
       <label for="numeroFactura">Número factura</label>
-      <input type="text" id="numeroFactura" placeholder="Ej: 0001">
+      <input type="text" id="numeroFactura" placeholder="Ej: 0001" autocomplete="off">
 
       <label for="fecha">Fecha</label>
       <input type="date" id="fecha">
@@ -96,15 +97,15 @@
         <button type="button" id="btnLimpiar" class="btnSecundario" style="flex: 1;" title="Vaciar campos del formulario sin borrar datos del emisor">Limpiar</button>
         <button type="button" id="generarFactura" class="btnPrincipal" style="flex: 2; margin-top: 0;">Generar factura</button>
       </div>
-    </div>
+    </main>
   </div>
 
   <!-- Modal Flotante: Calculadora independiente de IVA -->
-  <div id="modalCalc" class="modal-calc" style="display: none;">
-    <div class="modal-calc-content">
+  <div id="modalCalc" class="modal-calc" aria-hidden="true" style="display: none;">
+    <div class="modal-calc-content" role="dialog" aria-labelledby="tituloModal">
       <div class="modal-calc-header">
-        <h3>Calculadora de IVA rápida</h3>
-        <span id="btnCerrarCalc" class="btn-cerrar-modal">&times;</span>
+        <h3 id="tituloModal">Calculadora de IVA rápida</h3>
+        <span id="btnCerrarCalc" class="btn-cerrar-modal" role="button" tabindex="0" aria-label="Cerrar modal">&times;</span>
       </div>
       <p style="font-size: 12px; color: #666; margin-top: 0;">Introduce el precio total (IVA incluido) para calcular la base:</p>
 
