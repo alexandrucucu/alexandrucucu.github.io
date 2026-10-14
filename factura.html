@@ -3,77 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Factura</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="ticketBody">
-  <div class="ticket">
-    <!-- Encabezado del ticket / factura -->
-    <h1 id="tipoFactura">Factura simplificada</h1>
-    <h2 id="nombreEmisor"></h2>
+  <!-- Contenedor dinámico donde se inyectarán una o varias facturas -->
+  <main id="contenedorLote"></main>
 
-    <!-- Bloque de Emisor y Receptor (en paralelo en pantalla/impresión) -->
-    <div id="bloquePersonas" class="bloque-personas">
-      <div class="bloque-datos">
-        <span class="tituloBloque">DATOS DEL EMISOR</span>
-        <p id="emisorNombre"><strong>Nombre Emisor</strong></p>
-        <p id="emisorDni">00000000X</p>
-        <p id="emisorDireccion">Calle Emisor 1</p>
-        <p id="emisorCiudad">Ciudad, 00000</p>
-        <p id="emisorTelefono">600000000</p>
-        <p id="emisorEmail">emisor@ejemplo.com</p>
-      </div>
-
-      <div class="bloque-datos" id="bloqueReceptor" style="display: none;">
-        <span class="tituloBloque">DATOS DEL RECEPTOR</span>
-        <p id="receptorNombre"><strong>-</strong></p>
-        <p id="receptorDni">-</p>
-        <p id="receptorDireccion">-</p>
-        <p id="receptorCiudad">-</p>
-        <p id="receptorTelefono">-</p>
-        <p id="receptorEmail">-</p>
-      </div>
-    </div>
-
-    <!-- Metadatos de Factura -->
-    <div class="datosFactura">
-      <p><span class="etiquetaFondo">Número de factura:</span> <strong id="numFactura">-</strong></p>
-      <p><span class="etiquetaFondo">Fecha:</span> <strong id="fechaFactura">-</strong></p>
-    </div>
-
-    <!-- Tabla detallada de items -->
-    <table>
-      <thead>
-        <tr>
-          <th>Concepto/Descripción</th>
-          <th>Cantidad</th>
-          <th>Precio</th>
-          <th>Importe</th>
-        </tr>
-      </thead>
-      <tbody id="tablaConceptos"></tbody>
-    </table>
-
-    <!-- Totales y desglose impositivo -->
-    <div class="total">
-      <div id="desgloseOrdinaria" style="display: none;">
-        <p style="margin: 3px 0;">Base Imponible: <strong id="baseImponible">0.00€</strong></p>
-        <p style="margin: 3px 0;">IVA (<span id="lblIva">21</span>%): <strong id="cuotaIva">0.00€</strong></p>
-      </div>
-      <div class="totalLineaH2">
-        <span>Total factura:</span>
-        <h2 id="totalFactura">0€</h2>
-      </div>
-      <p id="avisoIvaIncluido" style="margin-top: 5px; font-weight: bold; display: none;">IVA INCLUIDO</p>
-    </div>
-
-    <!-- Barra de acciones de impresión (Oculta al imprimir a PDF) -->
-    <div class="acciones">
-      <button type="button" class="btnSecundario" id="btnEditar">Modificar</button>
-      <button type="button" class="btnSecundario" id="btnNueva">Nueva Factura</button>
-      <button type="button" class="btnSecundario btnPrint" onclick="window.print()">Imprimir / PDF</button>
-    </div>
-  </div>
+  <!-- Barra flotante de acciones (se oculta al imprimir) -->
+  <nav class="acciones" style="margin: 20px auto; max-width: 550px; text-align: center;">
+    <button type="button" class="btnSecundario" id="btnEditar">Modificar</button>
+    <button type="button" class="btnSecundario" id="btnNueva">Nueva Factura</button>
+    <button type="button" class="btnSecundario btnPrint" onclick="window.print()">Imprimir / PDF</button>
+  </nav>
 
   <script src="factura.js"></script>
 </body>
