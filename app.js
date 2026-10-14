@@ -1,15 +1,15 @@
 /**
  * APP.JS - Lógica de control de la pantalla de creación/edición de facturas
+ * Versión de producción con validaciones reforzadas y soporte multi-lote.
  */
 
-// Constantes de configuración global
 const IVA_POR_DEFECTO = 21;
 const CONCEPTOS_PREDEFINIDOS = ["Piercing", "Tatuaje", "Joyería"];
 
 /**
- * Fabrica dinámicamente un nodo del DOM con los controles de un concepto (servicio/producto).
- * @param {Object|null} datos - Datos previos si estamos en modo edición o importación CSV.
- * @returns {HTMLElement} Div container con la fila del concepto.
+ * Fabrica dinámicamente un nodo del DOM con los controles de un concepto.
+ * @param {Object|null} datos - Datos previos si se rehidrata desde URL o CSV.
+ * @returns {HTMLElement} Div contenedor con la fila del concepto.
  */
 function crearConcepto(datos = null) {
   const div = document.createElement("div");
@@ -22,14 +22,14 @@ function crearConcepto(datos = null) {
   const esCantidadOtro = cantidadInicial > 9;
 
   div.innerHTML = `
-    <select class="descripcion">
+    <select class="descripcion" aria-label="Descripción del servicio">
       <option value="Piercing" ${descripcion === "Piercing" ? "selected" : ""}>Piercing</option>
       <option value="Tatuaje" ${descripcion === "Tatuaje" ? "selected" : ""}>Tatuaje</option>
       <option value="Joyería" ${descripcion === "Joyería" ? "selected" : ""}>Joyería</option>
       <option value="Otro" ${esOtroDesc ? "selected" : ""}>Otro...</option>
     </select>
 
-    <select class="cantidadSelect" style="${esCantidadOtro ? 'display:none;' : 'display:block;'}">
+    <select class="cantidadSelect" aria-label="Cantidad prestada" style="${esCantidadOtro ? 'display:none;' : 'display:block;'}">
       <option value="1" ${cantidadInicial === 1 ? "selected" : ""}>1</option>
       <option value="2" ${cantidadInicial === 2 ? "selected" : ""}>2</option>
       <option value="3" ${cantidadInicial === 3 ? "selected" : ""}>3</option>
@@ -47,6 +47,7 @@ function crearConcepto(datos = null) {
       class="cantidadInput"
       placeholder="Cant."
       min="1"
+      aria-label="Cantidad personalizada"
       style="${esCantidadOtro ? 'display:block;' : 'display:none;'}"
       value="${esCantidadOtro ? cantidadInicial : ''}"
     >
@@ -57,15 +58,17 @@ function crearConcepto(datos = null) {
       placeholder="Precio"
       min="0"
       step="0.01"
+      aria-label="Precio unitario en euros"
       value="${datos && datos.precio !== undefined ? datos.precio : ''}"
     >
 
-    <button type="button" class="btnEliminar" title="Eliminar concepto">&times;</button>
+    <button type="button" class="btnEliminar" title="Eliminar concepto" aria-label="Eliminar concepto">&times;</button>
 
     <input
       type="text"
       class="otroConcepto"
       placeholder="Escribir concepto"
+      aria-label="Concepto personalizado"
       style="${esOtroDesc ? 'display:block;width:100%;' : 'display:none;width:100%;'}"
       value="${esOtroDesc ? descripcion : ''}"
     >
@@ -109,20 +112,23 @@ function crearConcepto(datos = null) {
 }
 
 /**
- * Muestra el panel de alerta con el mensaje de error de validación.
- * @param {string} mensaje 
+ * Muestra el panel de error con estilo visual de alerta.
+ * @param {string} mensaje - Texto explicativo del error.
  */
 function mostrarError(mensaje) {
   const divError = document.getElementById("mensajeError");
   if (divError) {
     divError.innerText = mensaje;
+    divError.style.backgroundColor = "#f8d7da";
+    divError.style.color = "#721c24";
+    divError.style.borderColor = "#f5c6cb";
     divError.style.display = "block";
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
 /**
- * Oculta el panel de alerta de errores.
+ * Oculta la barra de alertas.
  */
 function ocultarError() {
   const divError = document.getElementById("mensajeError");
@@ -133,43 +139,53 @@ function ocultarError() {
 }
 
 /**
- * Parsea el texto CSV, realiza validaciones de consistencia y devuelve los datos procesados.
- * @param {string} textoCsv 
- * @returns {Object|null}
+ * Convierte un texto a número float soportando coma o punto decimal.
+ * @param {string} val 
+ * @returns {number}
  */
-function parsearCsvConValidaciones(textoCsv) {
-  const lineas = textoCsv.split(/\r?\n/).filter(l => l.trim().length > 0);
+function parsearNumeroSeguro(val) {
+  if (!val) return 0;
+  const numSanitizado = val.toString().replace(",", ".");
+  const num = parseFloat(numSanitizado);
+  return isNaN(num) ? 0 : num;
+}
 
-  let primerNumero = "";
-  let primeraFecha = "";
-  let primeraFechaIso = "";
-  let desglosarIvaInicial = null;
-  let pctIvaFinal = IVA_POR_DEFECTO;
-  const listaConceptos = [];
+/**
+ * Parsea el texto CSV, agrupa filas por factura y aplica validaciones estrictas.
+ * @param {string} textoCsv 
+ * @returns {Array<Object>|null} Lista de facturas o null si falla la validación.
+ */
+function parsearCsvLoteConValidaciones(textoCsv) {
+  const lineas = textoCsv.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const facturasMap = new Map();
 
   for (let i = 0; i < lineas.length; i++) {
     const linea = lineas[i];
-    const partes = linea.includes(";") ? linea.split(";") : linea.split(",");
+    const partesRaw = linea.includes(";") ? linea.split(";") : linea.split(",");
+    const partes = partesRaw.map(p => p.trim());
 
     if (partes.length >= 5) {
-      const numFactura = partes[0].trim();
+      const numFactura = partes[0];
 
-      // Ignorar fila de encabezados si existe
-      if (isNaN(numFactura) && (numFactura.toLowerCase().includes("numero") || numFactura.toLowerCase().includes("factura") || numFactura.toLowerCase().includes("nº"))) {
+      // Filtro de cabeceras
+      if (isNaN(numFactura) && (
+        numFactura.toLowerCase().includes("numero") || 
+        numFactura.toLowerCase().includes("factura") || 
+        numFactura.toLowerCase().includes("nº")
+      )) {
         continue;
       }
 
-      let fechaRaw = partes[1].trim();
+      let fechaRaw = partes[1];
       let fechaIso = "";
 
-      // Formateo de fecha: DD/MM/AAAA o DD-MM-AAAA a ISO (AAAA-MM-DD)
       if (fechaRaw.includes("/")) {
         const [d, m, a] = fechaRaw.split("/");
         if (d && m && a) fechaIso = `${a.padStart(4, '20')}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
       } else if (fechaRaw.includes("-")) {
         const partesFecha = fechaRaw.split("-");
         if (partesFecha[0].length === 4) {
-          fechaIso = fechaRaw; // Ya en AAAA-MM-DD
+          fechaIso = fechaRaw;
         } else if (partesFecha.length === 3) {
           const [d, m, a] = partesFecha;
           fechaIso = `${a.padStart(4, '20')}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
@@ -177,48 +193,46 @@ function parsearCsvConValidaciones(textoCsv) {
       }
 
       if (!fechaIso) {
-        mostrarError(`La fecha "${fechaRaw}" en la fila ${i + 1} no tiene un formato válido (usar DD/MM/AAAA o AAAA-MM-DD).`);
+        mostrarError(`La fecha "${fechaRaw}" en la fila ${i + 1} no es válida (Usar DD/MM/AAAA o AAAA-MM-DD).`);
         return null;
       }
 
-      // Validación de consistencia de Número de factura y Fecha
-      if (!primerNumero) {
-        primerNumero = numFactura;
-        primeraFecha = fechaRaw;
-        primeraFechaIso = fechaIso;
-      } else if (primerNumero !== numFactura) {
-        mostrarError(`Incoherencia en CSV: Las filas pegadas contienen diferentes números de factura ("${primerNumero}" y "${numFactura}").`);
+      const conceptoVal = partes[2];
+      const cantidadVal = parsearNumeroSeguro(partes[3]) || 1;
+      const precioVal = parsearNumeroSeguro(partes[4]);
+
+      const valIvaRaw = partes[5] !== undefined ? partes[5] : "";
+      const tieneIvaEstaFila = valIvaRaw !== "" && !isNaN(parsearNumeroSeguro(valIvaRaw));
+      const pctIvaFila = tieneIvaEstaFila ? parsearNumeroSeguro(valIvaRaw) : IVA_POR_DEFECTO;
+
+      if (!facturasMap.has(numFactura)) {
+        facturasMap.set(numFactura, {
+          numeroFactura: numFactura,
+          fecha: fechaIso,
+          fechaIso: fechaIso,
+          desglosarIva: tieneIvaEstaFila,
+          porcentajeIva: pctIvaFila,
+          conceptos: []
+        });
+      }
+
+      const facActual = facturasMap.get(numFactura);
+
+      // Validaciones de consistencia
+      if (facActual.fechaIso !== fechaIso) {
+        mostrarError(`Incoherencia en CSV: La factura ${numFactura} tiene fechas distintas.`);
         return null;
-      } else if (primeraFechaIso !== fechaIso) {
-        mostrarError(`Incoherencia en CSV: Las filas para la factura ${numFactura} contienen fechas distintas ("${primeraFecha}" y "${fechaRaw}").`);
+      }
+      if (facActual.desglosarIva !== tieneIvaEstaFila) {
+        mostrarError(`Incoherencia en CSV: No se pueden mezclar filas con y sin IVA en la factura ${numFactura}.`);
+        return null;
+      }
+      if (tieneIvaEstaFila && facActual.porcentajeIva !== pctIvaFila) {
+        mostrarError(`Incoherencia en CSV: La factura ${numFactura} tiene porcentajes de IVA distintos (${facActual.porcentajeIva}% y ${pctIvaFila}%).`);
         return null;
       }
 
-      // Evaluación del tratamiento del IVA
-      const valIvaRaw = partes[5] !== undefined ? partes[5].trim() : "";
-      const tieneIvaEstaFila = valIvaRaw !== "" && !isNaN(parseFloat(valIvaRaw));
-
-      if (desglosarIvaInicial === null) {
-        desglosarIvaInicial = tieneIvaEstaFila;
-        if (tieneIvaEstaFila) {
-          pctIvaFinal = parseFloat(valIvaRaw);
-        }
-      } else {
-        if (desglosarIvaInicial !== tieneIvaEstaFila) {
-          mostrarError(`Incoherencia en CSV: No se pueden mezclar líneas con IVA desglosado y líneas sin IVA dentro de la misma factura ${numFactura}.`);
-          return null;
-        }
-        if (tieneIvaEstaFila && parseFloat(valIvaRaw) !== pctIvaFinal) {
-          mostrarError(`Incoherencia en CSV: Las filas para la factura ${numFactura} tienen porcentajes de IVA distintos (${pctIvaFinal}% y ${valIvaRaw}%).`);
-          return null;
-        }
-      }
-
-      const conceptoVal = partes[2].trim();
-      const cantidadVal = parseFloat(partes[3].trim()) || 1;
-      const precioVal = parseFloat(partes[4].trim()) || 0;
-
-      listaConceptos.push({
+      facActual.conceptos.push({
         descripcion: conceptoVal,
         cantidad: cantidadVal,
         precio: precioVal
@@ -226,21 +240,15 @@ function parsearCsvConValidaciones(textoCsv) {
     }
   }
 
-  if (listaConceptos.length === 0) {
-    mostrarError("El formato CSV no es válido. Columnas esperadas: Nº, Fecha, Concepto, Cantidad, Precio, [IVA%]");
+  const resultado = Array.from(facturasMap.values());
+  if (resultado.length === 0) {
+    mostrarError("Formato CSV no válido. Columnas requeridas: Nº, Fecha, Concepto, Cantidad, Precio, [IVA%]");
     return null;
   }
 
-  return {
-    numeroFactura: primerNumero,
-    fechaIso: primeraFechaIso,
-    desglosarIva: Boolean(desglosarIvaInicial),
-    porcentajeIva: pctIvaFinal,
-    conceptos: listaConceptos
-  };
+  return resultado;
 }
 
-// Inicialización al cargar el DOM
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const negocio = urlParams.get("emisorNegocio");
@@ -275,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const factura = JSON.parse(datosGuardados);
       document.getElementById("numeroFactura").value = factura.numeroFactura || "";
-      document.getElementById("fecha").value = factura.fecha || "";
+      document.getElementById("fecha").value = factura.fecha || factura.fechaIso || "";
       document.getElementById("porcentajeIva").value = factura.porcentajeIva !== undefined ? factura.porcentajeIva : IVA_POR_DEFECTO;
       
       if (factura.desglosarIva !== undefined) {
@@ -311,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
     contenedorConceptos.appendChild(crearConcepto());
   }
 
-  // CONTROLES DE IMPORTACIÓN CSV
+  // CONTROLES CSV
   const btnToggleCsv = document.getElementById("btnToggleCsv");
   const bloqueCsv = document.getElementById("bloqueCsv");
   const btnCargarCsv = document.getElementById("btnCargarCsv");
@@ -324,38 +332,47 @@ document.addEventListener("DOMContentLoaded", () => {
       if (bloqueCsv.style.display === "block") inputCsv.focus();
     });
 
-    // OPCIÓN 1: Rellenar el formulario para revisar
     btnCargarCsv.addEventListener("click", () => {
       ocultarError();
       const textoCsv = inputCsv.value.trim();
       if (!textoCsv) return;
 
-      const resultado = parsearCsvConValidaciones(textoCsv);
-      if (!resultado) return;
+      const lote = parsearCsvLoteConValidaciones(textoCsv);
+      if (!lote) return;
 
-      document.getElementById("numeroFactura").value = resultado.numeroFactura;
-      document.getElementById("fecha").value = resultado.fechaIso;
-      chkDesglose.checked = resultado.desglosarIva;
-      document.getElementById("porcentajeIva").value = resultado.porcentajeIva;
+      const primera = lote[0];
+      document.getElementById("numeroFactura").value = primera.numeroFactura;
+      document.getElementById("fecha").value = primera.fechaIso;
+      chkDesglose.checked = primera.desglosarIva;
+      document.getElementById("porcentajeIva").value = primera.porcentajeIva;
 
       contenedorConceptos.innerHTML = "";
-      resultado.conceptos.forEach(c => {
+      primera.conceptos.forEach(c => {
         contenedorConceptos.appendChild(crearConcepto(c));
       });
 
       bloqueCsv.style.display = "none";
       inputCsv.value = "";
+
+      if (lote.length > 1) {
+        mostrarError(`Nota: Se ha cargado en el formulario la primera factura (Nº ${primera.numeroFactura}) de las ${lote.length} detectadas. Para generarlas todas juntas en un PDF, usa "Ir Directo a Factura 🚀".`);
+        const divError = document.getElementById("mensajeError");
+        if (divError) {
+          divError.style.backgroundColor = "#e8f4f8";
+          divError.style.color = "#1d6f8a";
+          divError.style.borderColor = "#bce8f1";
+        }
+      }
     });
 
-    // OPCIÓN 2: Ir directo a la Factura (Salto exprés a PDF)
     if (btnDirectoCsv) {
       btnDirectoCsv.addEventListener("click", () => {
         ocultarError();
         const textoCsv = inputCsv.value.trim();
         if (!textoCsv) return;
 
-        const resultado = parsearCsvConValidaciones(textoCsv);
-        if (!resultado) return;
+        const lote = parsearCsvLoteConValidaciones(textoCsv);
+        if (!lote) return;
 
         const emisor = {
           negocio: urlParams.get("emisorNegocio") || "",
@@ -367,25 +384,32 @@ document.addEventListener("DOMContentLoaded", () => {
           email: urlParams.get("emisorEmail") || ""
         };
 
-        const factura = {
-          numeroFactura: resultado.numeroFactura,
-          fecha: resultado.fechaIso,
-          conceptos: resultado.conceptos,
-          receptor: null,
-          desglosarIva: resultado.desglosarIva,
-          porcentajeIva: resultado.porcentajeIva,
-          emisor
-        };
+        lote.forEach(f => f.emisor = emisor);
 
         const targetParams = new URLSearchParams(window.location.search);
-        targetParams.set("datos", JSON.stringify(factura));
+        let payloadString = "";
+
+        if (lote.length === 1) {
+          payloadString = JSON.stringify(lote[0]);
+          targetParams.set("datos", payloadString);
+          targetParams.delete("lote");
+        } else {
+          payloadString = JSON.stringify(lote);
+          targetParams.set("lote", payloadString);
+          targetParams.delete("datos");
+        }
+
+        // Control preventivo de longitud de la URL
+        if (targetParams.toString().length > 15000) {
+          mostrarError("El lote pegado es demasiado grande para enviarlo directamente. Reduce el número de facturas por lote.");
+          return;
+        }
 
         window.location.href = `factura.html?${targetParams.toString()}`;
       });
     }
   }
 
-  // FUNCIÓN Y EVENTO PARA LIMPIAR EL FORMULARIO PRESERVANDO EL EMISOR
   function limpiarFormulario() {
     ocultarError();
 
@@ -411,10 +435,19 @@ document.addEventListener("DOMContentLoaded", () => {
     contenedorConceptos.innerHTML = "";
     contenedorConceptos.appendChild(crearConcepto());
 
-    // Elimina únicamente el parámetro 'datos' dejando intactos los parámetros del emisor
     const currentParams = new URLSearchParams(window.location.search);
+    let modificado = false;
+
     if (currentParams.has("datos")) {
       currentParams.delete("datos");
+      modificado = true;
+    }
+    if (currentParams.has("lote")) {
+      currentParams.delete("lote");
+      modificado = true;
+    }
+
+    if (modificado) {
       const nuevaUrl = window.location.pathname + "?" + currentParams.toString();
       window.history.replaceState({}, document.title, nuevaUrl);
     }
@@ -429,7 +462,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handlers secundarios
   document.getElementById("agregarConcepto").addEventListener("click", () => {
     document.getElementById("conceptosContainer").appendChild(crearConcepto());
   });
@@ -438,7 +470,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fecha").value = new Date().toISOString().split("T")[0];
   });
 
-  // Envío tradicional del formulario
   document.getElementById("generarFactura").addEventListener("click", () => {
     ocultarError();
 
@@ -477,19 +508,19 @@ document.addEventListener("DOMContentLoaded", () => {
       let cantidad;
 
       if (selectCant.style.display === "none") {
-        cantidad = parseFloat(cantidadInput.value.trim());
-        if (isNaN(cantidad) || cantidad <= 0) {
+        cantidad = parsearNumeroSeguro(cantidadInput.value.trim());
+        if (cantidad <= 0) {
           mostrarError(`En el concepto #${index + 1}, introduce una cantidad válida mayor que 0.`);
           return;
         }
       } else {
-        cantidad = parseFloat(selectCant.value);
+        cantidad = parsearNumeroSeguro(selectCant.value);
       }
 
       const precioInput = c.querySelector(".precio").value.trim();
-      const precio = parseFloat(precioInput);
+      const precio = parsearNumeroSeguro(precioInput);
 
-      if (precioInput === "" || isNaN(precio) || precio <= 0) {
+      if (precioInput === "" || precio <= 0) {
         mostrarError(`En el concepto #${index + 1}, debes indicar un precio válido mayor que 0€.`);
         return;
       }
@@ -507,8 +538,8 @@ document.addEventListener("DOMContentLoaded", () => {
       email: urlParams.get("emisorEmail") || ""
     };
 
-    const valIva = parseFloat(document.getElementById("porcentajeIva").value);
-    const porcentajeIva = (!isNaN(valIva) && valIva >= 0) ? valIva : IVA_POR_DEFECTO;
+    const valIva = parsearNumeroSeguro(document.getElementById("porcentajeIva").value);
+    const porcentajeIva = valIva >= 0 ? valIva : IVA_POR_DEFECTO;
 
     let receptor = null;
     if (seccionReceptor.style.display !== "none") {
@@ -539,6 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const targetParams = new URLSearchParams(window.location.search);
     targetParams.set("datos", JSON.stringify(factura));
+    targetParams.delete("lote");
 
     window.location.href = `factura.html?${targetParams.toString()}`;
   });
@@ -551,8 +583,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const calcIvaInput = document.getElementById("calcPctIva");
 
   function calcularIvaRapido() {
-    const total = parseFloat(calcPrecioInput.value) || 0;
-    const pct = parseFloat(calcIvaInput.value) || IVA_POR_DEFECTO;
+    const total = parsearNumeroSeguro(calcPrecioInput.value);
+    const pct = parsearNumeroSeguro(calcIvaInput.value) || IVA_POR_DEFECTO;
 
     const base = total / (1 + (pct / 100));
     const cuota = total - base;
@@ -565,17 +597,24 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnAbrirCalc && modalCalc) {
     btnAbrirCalc.addEventListener("click", () => {
       modalCalc.style.display = "flex";
+      modalCalc.setAttribute("aria-hidden", "false");
       calcPrecioInput.focus();
     });
 
+    const cerrarModal = () => {
+      modalCalc.style.display = "none";
+      modalCalc.setAttribute("aria-hidden", "true");
+    };
+
     if (btnCerrarCalc) {
-      btnCerrarCalc.addEventListener("click", () => {
-        modalCalc.style.display = "none";
+      btnCerrarCalc.addEventListener("click", cerrarModal);
+      btnCerrarCalc.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") cerrarModal();
       });
     }
 
     window.addEventListener("click", (e) => {
-      if (e.target === modalCalc) modalCalc.style.display = "none";
+      if (e.target === modalCalc) cerrarModal();
     });
 
     calcPrecioInput.addEventListener("input", calcularIvaRapido);
