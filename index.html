@@ -21,16 +21,17 @@
     <!-- Bloque de alertas para validaciones -->
     <div id="mensajeError" class="alerta-error" role="alert" style="display: none;"></div>
 
-    <!-- CAJA DESPLEGABLE PARA IMPORTAR LINEA O BLOQUE CSV -->
+    <!-- CAJA DESPLEGABLE PARA IMPORTAR LÍNEA O BLOQUE CSV -->
     <section id="bloqueCsv" style="display: none; background: #eef9f1; border: 1px solid #27ae60; padding: 10px; border-radius: 6px; margin-bottom: 12px;">
       <label for="inputCsv" style="font-size: 12px; font-weight: bold; color: #27ae60; display: block; margin-bottom: 4px;">
-        Pegar CSV de Excel (Nº, Fecha, Concepto, Cantidad, Precio, [IVA%]):
+        Pegar CSV (Nº; Fecha; Concepto; Cantidad; Precio; [% IVA]; [Cliente]; [DNI]; [Dirección]; [Ciudad]; [Tel]; [Email]):
       </label>
       <div style="display: flex; flex-direction: column; gap: 6px;">
-        <textarea id="inputCsv" rows="3" placeholder="Ejemplo:&#10;158, 16/10/2026, Piercing, 1, 25, 21&#10;158, 16/10/2026, Joyería, 1, 15, 21&#10;159, 17/10/2026, Tatuaje, 1, 80, 21" style="font-size: 12px; width: 100%; font-family: monospace;"></textarea>
+        <textarea id="inputCsv" rows="4" placeholder="Ejemplo Ordinaria:&#10;1280; 01/07/2026; Tatuaje FO; 1; 300,00; 21; Carlos Ruiz; 12345678Z; Av. Madrid 10; Zaragoza; 600000000; carlos@email.com&#10;&#10;Ejemplo Simplificada:&#10;1281; 02/07/2026; Piercing; 1; 40,00; 21" style="font-size: 12px; width: 100%; font-family: monospace;"></textarea>
         
         <!-- OPCIONES CSV -->
-        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+        <div style="display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap;">
+          <button type="button" id="btnEstadisticasCsv" style="background: #8e44ad; font-size: 13px; padding: 6px 10px;">📊 Ver Estadísticas</button>
           <button type="button" id="btnCargarCsv" style="background: #27ae60; font-size: 13px; padding: 6px 10px;">Rellenar Formulario</button>
           <button type="button" id="btnDirectoCsv" style="background: #2980b9; font-size: 13px; padding: 6px 10px;">Ir Directo a Factura 🚀</button>
         </div>
@@ -121,10 +122,21 @@
       </div>
 
       <div class="calc-resultados">
-        <div class="calc-fila"><span>Base Imponible:</span> <strong id="calcBase">0.00 €</strong></div>
-        <div class="calc-fila"><span>Cuota IVA:</span> <strong id="calcCuota">0.00 €</strong></div>
-        <div class="calc-fila calc-total"><span>Total final:</span> <strong id="calcTotal">0.00 €</strong></div>
+        <div class="calc-fila"><span>Base Imponible:</span> <strong id="calcBase">0,00 €</strong></div>
+        <div class="calc-fila"><span>Cuota IVA:</span> <strong id="calcCuota">0,00 €</strong></div>
+        <div class="calc-fila calc-total"><span>Total final:</span> <strong id="calcTotal">0,00 €</strong></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal Flotante: Estadísticas del Lote CSV -->
+  <div id="modalStats" class="modal-calc" aria-hidden="true" style="display: none;">
+    <div class="modal-calc-content" style="max-width: 480px;" role="dialog" aria-labelledby="tituloModalStats">
+      <div class="modal-calc-header">
+        <h3 id="tituloModalStats">📊 Estadísticas del Lote</h3>
+        <span id="btnCerrarStats" class="btn-cerrar-modal" role="button" tabindex="0" aria-label="Cerrar modal">&times;</span>
+      </div>
+      <div id="contenidoStats"></div>
     </div>
   </div>
 
