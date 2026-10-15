@@ -1,12 +1,15 @@
 /**
  * FACTURA.JS - Renderizador seguro e impresor por lote
+ * Formatea importes según la normativa oficial española (Intl.NumberFormat).
  */
 
-/**
- * Escapa caracteres especiales de HTML para prevenir inyecciones XSS.
- * @param {string} str 
- * @returns {string}
- */
+const formateadorMoneda = new Intl.NumberFormat('es-ES', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
 function escaparHtml(str) {
   if (!str) return "";
   return String(str)
@@ -17,12 +20,6 @@ function escaparHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-/**
- * Genera el marcado HTML de un ticket/factura saneado.
- * @param {Object} factura 
- * @param {URLSearchParams} urlParams 
- * @returns {string} HTML seguro.
- */
 function generarHtmlFactura(factura, urlParams) {
   const emisor = factura.emisor || {};
   const negocio = emisor.negocio || urlParams.get("emisorNegocio") || "";
@@ -57,8 +54,8 @@ function generarHtmlFactura(factura, urlParams) {
         <tr>
           <td style="text-align: left;">${escaparHtml(c.descripcion)}</td>
           <td>${cant}</td>
-          <td>${precio.toFixed(2)}€</td>
-          <td style="text-align: right;">${importe.toFixed(2)}€</td>
+          <td>${formateadorMoneda.format(precio)}</td>
+          <td style="text-align: right;">${formateadorMoneda.format(importe)}</td>
         </tr>
       `;
     });
@@ -72,17 +69,17 @@ function generarHtmlFactura(factura, urlParams) {
 
   const bloqueTotalesHtml = debeDesglosar ? `
     <div>
-      <p style="margin: 3px 0;">Base Imponible: <strong>${base.toFixed(2)}€</strong></p>
-      <p style="margin: 3px 0;">IVA (${pctIva}%): <strong>${cuota.toFixed(2)}€</strong></p>
+      <p style="margin: 3px 0;">Base Imponible: <strong>${formateadorMoneda.format(base)}</strong></p>
+      <p style="margin: 3px 0;">IVA (${pctIva}%): <strong>${formateadorMoneda.format(cuota)}</strong></p>
     </div>
     <div class="totalLineaH2">
       <span>Total factura:</span>
-      <h2>${total.toFixed(2)}€</h2>
+      <h2>${formateadorMoneda.format(total)}</h2>
     </div>
   ` : `
     <div class="totalLineaH2">
       <span>Total factura:</span>
-      <h2>${sumaImportes.toFixed(2)}€</h2>
+      <h2>${formateadorMoneda.format(sumaImportes)}</h2>
     </div>
     <p style="margin-top: 5px; font-weight: bold;">IVA INCLUIDO</p>
   `;
@@ -91,11 +88,11 @@ function generarHtmlFactura(factura, urlParams) {
     <div class="bloque-datos">
       <span class="tituloBloque">DATOS DEL RECEPTOR</span>
       <p><strong>${escaparHtml(factura.receptor.nombre)}</strong></p>
-      <p>${escaparHtml(factura.receptor.dni)}</p>
-      <p>${escaparHtml(factura.receptor.direccion)}</p>
-      <p>${escaparHtml(factura.receptor.ciudad)}</p>
-      <p>${escaparHtml(factura.receptor.telefono)}</p>
-      <p>${escaparHtml(factura.receptor.email)}</p>
+      ${factura.receptor.dni ? `<p>${escaparHtml(factura.receptor.dni)}</p>` : ''}
+      ${factura.receptor.direccion ? `<p>${escaparHtml(factura.receptor.direccion)}</p>` : ''}
+      ${factura.receptor.ciudad ? `<p>${escaparHtml(factura.receptor.ciudad)}</p>` : ''}
+      ${factura.receptor.telefono ? `<p>${escaparHtml(factura.receptor.telefono)}</p>` : ''}
+      ${factura.receptor.email ? `<p>${escaparHtml(factura.receptor.email)}</p>` : ''}
     </div>
   ` : '';
 
@@ -145,35 +142,38 @@ function generarHtmlFactura(factura, urlParams) {
 
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const datosParam = urlParams.get("datos");
-  const loteParam = urlParams.get("lote");
   const contenedorLote = document.getElementById("contenedorLote");
   const btnEditar = document.getElementById("btnEditar");
 
   let listaFacturas = [];
 
-  if (loteParam) {
-    try {
-      listaFacturas = JSON.parse(loteParam);
-    } catch (e) { console.error(e); }
-  } else if (datosParam) {
-    try {
-      listaFacturas = [JSON.parse(datosParam)];
-    } catch (e) { console.error(e); }
+  const loteStorage = sessionStorage.getItem("factura_lote");
+  const activaStorage = sessionStorage.getItem("factura_activa");
+
+  if (loteStorage) {
+    try { listaFacturas = JSON.parse(loteStorage); } catch (e) { console.error(e); }
+  } else if (activaStorage) {
+    try { listaFacturas = [JSON.parse(activaStorage)]; } catch (e) { console.error(e); }
+  } else {
+    const datosParam = urlParams.get("datos");
+    const loteParam = urlParams.get("lote");
+    if (loteParam) {
+      try { listaFacturas = JSON.parse(loteParam); } catch (e) { console.error(e); }
+    } else if (datosParam) {
+      try { listaFacturas = [JSON.parse(datosParam)]; } catch (e) { console.error(e); }
+    }
   }
 
   if (listaFacturas.length === 0) {
     alert("No hay datos de factura para mostrar.");
-    window.location.href = "index.html";
+    window.location.href = `index.html?${urlParams.toString()}`;
     return;
   }
 
-  // Ocultar Modificar en lotes
   if (btnEditar) {
     btnEditar.style.display = listaFacturas.length > 1 ? "none" : "inline-block";
   }
 
-  // Título inteligente para la exportación PDF
   if (listaFacturas.length === 1) {
     document.title = `Factura_${listaFacturas[0].numeroFactura}`;
   } else {
@@ -193,6 +193,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnNueva = document.getElementById("btnNueva");
   if (btnNueva) {
     btnNueva.addEventListener("click", () => {
+      sessionStorage.removeItem("factura_activa");
+      sessionStorage.removeItem("factura_lote");
       const paramsOriginales = new URLSearchParams(window.location.search);
       paramsOriginales.delete("datos");
       paramsOriginales.delete("lote");
