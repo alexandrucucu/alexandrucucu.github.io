@@ -1,6 +1,6 @@
 /**
  * APP.JS - Lógica de control del formulario de facturación
- * Soporta importación CSV extensible (Simplificadas y Ordinarias), estadísticas e IVA.
+ * Soporta importación CSV extensible (Simplificadas y Ordinarias), validaciones estrictas y estadísticas.
  */
 
 const IVA_POR_DEFECTO = 21;
@@ -158,7 +158,7 @@ function dividirLineaCsv(linea) {
 }
 
 /**
- * Parser de CSV extensible a Facturas Simplificadas y Ordinarias (con cliente).
+ * Parser de CSV con validación estricta y aplicación de "Zaragoza" por defecto si la ciudad está vacía en CSV.
  * Esquema: Nº; Fecha; Concepto; Cantidad; Precio; [% IVA]; [NombreCliente]; [DNI]; [Dirección]; [Ciudad]; [Tel]; [Email]
  * @param {string} textoCsv 
  * @returns {Array<Object>|null}
@@ -168,6 +168,7 @@ function parsearCsvLoteConValidaciones(textoCsv) {
   const facturasMap = new Map();
 
   for (let i = 0; i < lineas.length; i++) {
+    const numFila = i + 1;
     const partes = dividirLineaCsv(lineas[i]);
 
     if (partes.length >= 5) {
@@ -199,29 +200,62 @@ function parsearCsvLoteConValidaciones(textoCsv) {
       }
 
       if (!fechaIso) {
-        mostrarError(`La fecha "${fechaRaw}" en la fila ${i + 1} no es válida (Usar DD/MM/AAAA o AAAA-MM-DD).`);
+        mostrarError(`Fila ${numFila}: La fecha "${fechaRaw}" no es válida (Usar DD/MM/AAAA o AAAA-MM-DD).`);
         return null;
       }
 
       const conceptoVal = partes[2];
+      if (!conceptoVal) {
+        mostrarError(`Fila ${numFila}: El concepto u descripción está vacío.`);
+        return null;
+      }
+
       const cantidadVal = parsearNumeroSeguro(partes[3]) || 1;
       const precioVal = parsearNumeroSeguro(partes[4]);
+
+      if (precioVal <= 0) {
+        mostrarError(`Fila ${numFila}: El precio debe ser mayor que 0.`);
+        return null;
+      }
 
       const valIvaRaw = partes[5] !== undefined ? partes[5] : "";
       const tieneIvaEstaFila = valIvaRaw !== "" && !isNaN(parsearNumeroSeguro(valIvaRaw));
       const pctIvaFila = tieneIvaEstaFila ? parsearNumeroSeguro(valIvaRaw) : IVA_POR_DEFECTO;
 
-      // Lectura opcional de cliente para Facturas Ordinarias desde CSV (Columna 6 en adelante)
+      // Lectura y validación estricta de cliente para Facturas Ordinarias desde CSV
       let receptor = null;
-      if (partes.length >= 7 && partes[6] && partes[6].trim() !== "") {
+      const nombreCliente = partes[6] ? partes[6].trim() : "";
+
+      if (partes.length >= 7 && nombreCliente !== "") {
+        const dniCliente = partes[7] ? partes[7].trim() : "";
+        const direccionCliente = partes[8] ? partes[8].trim() : "";
+        let ciudadCliente = partes[9] ? partes[9].trim() : "";
+
+        if (!dniCliente || !direccionCliente) {
+          mostrarError(`Fila ${numFila}: Para factura ordinaria (cliente "${nombreCliente}"), el DNI y la Dirección son obligatorios.`);
+          return null;
+        }
+
+        // Si la ciudad viene vacía en el CSV, se asigna "Zaragoza" por defecto
+        if (!ciudadCliente) {
+          ciudadCliente = "Zaragoza";
+        }
+
         receptor = {
-          nombre: partes[6].trim(),
-          dni: partes[7] ? partes[7].trim() : "",
-          direccion: partes[8] ? partes[8].trim() : "",
-          ciudad: partes[9] ? partes[9].trim() : "",
+          nombre: nombreCliente,
+          dni: dniCliente,
+          direccion: direccionCliente,
+          ciudad: ciudadCliente,
           telefono: partes[10] ? partes[10].trim() : "",
           email: partes[11] ? partes[11].trim() : ""
         };
+      } else {
+        const dniParcial = partes[7] ? partes[7].trim() : "";
+        const dirParcial = partes[8] ? partes[8].trim() : "";
+        if (dniParcial || dirParcial) {
+          mostrarError(`Fila ${numFila}: Has indicado DNI o Dirección pero falta el Nombre del cliente.`);
+          return null;
+        }
       }
 
       if (!facturasMap.has(numFactura)) {
@@ -238,9 +272,8 @@ function parsearCsvLoteConValidaciones(textoCsv) {
 
       const facActual = facturasMap.get(numFactura);
 
-      // Validaciones de consistencia
       if (facActual.fechaIso !== fechaIso) {
-        mostrarError(`Incoherencia en CSV: La factura ${numFactura} contiene fechas distintas.`);
+        mostrarError(`Incoherencia en CSV (Factura ${numFactura}): Contiene fechas distintas.`);
         return null;
       }
 
@@ -254,7 +287,7 @@ function parsearCsvLoteConValidaciones(textoCsv) {
 
   const resultado = Array.from(facturasMap.values());
   if (resultado.length === 0) {
-    mostrarError("Formato CSV no válido. Columnas esperadas separadas por ';': Nº; Fecha; Concepto; Cantidad; Precio; [% IVA]");
+    mostrarError("Formato CSV no válido. Columnas esperadas separadas por ';': Nº; Fecha; Concepto; Cantidad; Precio; [% IVA]; [Cliente]");
     return null;
   }
 
@@ -299,7 +332,6 @@ function calcularYMostrarEstadisticas(lote) {
 
     totalFacturado += subtotalFactura;
 
-    // Desglose de IVA siempre incluido en el precio cobrado
     const baseFactura = subtotalFactura / (1 + (pctIva / 100));
     const cuotaFactura = subtotalFactura - baseFactura;
 
@@ -711,10 +743,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const nombre = document.getElementById("receptorNombre").value.trim();
       const dni = document.getElementById("receptorDni").value.trim();
       const direccion = document.getElementById("receptorDireccion").value.trim();
-      const ciudad = document.getElementById("receptorCiudad").value.trim();
+      const ciudad = document.getElementById("receptorCiudad").value.trim(); // <-- ESTRICTO EN FORMULARIO MANUAL
       const telefono = document.getElementById("receptorTelefono").value.trim();
       const email = document.getElementById("receptorEmail").value.trim();
 
+      // Validación estricta incluyendo ciudad obligatoria para formulario manual
       if (!nombre || !dni || !direccion || !ciudad) {
         mostrarError("Para facturas ordinarias debes indicar Nombre, NIF/DNI, Dirección y Ciudad/CP.");
         return;
