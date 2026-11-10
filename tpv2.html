@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Conectando con TPV...</title>
+</head>
+<body>
+<form id="tpvForm" action="https://sis.redsys.es/sis/realizarPago" method="POST">
+<input type="hidden" name="Ds_MerchantParameters" id="merchantParams" />
+<input type="hidden" name="Ds_SignatureVersion" id="sigVersion" />
+<input type="hidden" name="Ds_Signature" id="signature" />
+</form>
+ 
+    <script>
+
+        // Leer los parámetros enviados por GET desde la URL local
+
+        const urlParams = new URLSearchParams(window.location.search);
+ 
+        document.getElementById('merchantParams').value = urlParams.get('mp') || '';
+
+        document.getElementById('sigVersion').value = urlParams.get('vs') || '';
+
+        document.getElementById('signature').value = urlParams.get('sig') || '';
+ 
+        // Enviar el formulario automáticamente por POST al TPV
+
+        window.addEventListener('load', () => {
+
+            document.getElementById('tpvForm').submit();
+
+        });
+</script>
+</body>
+</html>
+ 
